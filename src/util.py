@@ -78,10 +78,43 @@ def drawBlock(length, width, height, color):
            ]
     drawPlane(top, color)
 
-
-#Menu Options
 def drawMenu(app):
-    drawImage('src/krossykartlogo.png', app.width//2, app.height//4, align = 'center')
+    drawImage('src/krossykartlogo.png', app.width//2, app.height//3, align = 'center')
 
-cmu_graphics.run()
-drawMenu(app)
+#15112 Homework Fancy Wheel Inspired
+#star variables
+app.starAngle = 90
+app.starRadius = app.height*0.8 - 50
+app.starSpeed = 5
+
+app.starX = app.width
+app.starY = app.height
+app.starWidth = app.width //2
+app.starHeight = app.height//2
+
+def getRadiusEndpoint(cx, cy, r, theta):
+    return (cx + r*math.cos(math.radians(theta)),
+            cy - r*math.sin(math.radians(theta)))
+
+def drawStars(app):
+    x, y = getRadiusEndpoint(app.starX, app.starY, app.starRadius, app.starAngle)
+    drawImage('src/star.png', x - app.starWidth // 2, y - app.starHeight//2, width = app.starWidth, height = app.starHeight)
+
+#print(getImageSize('src/star.png'))
+def drawButtons(app):
+    drawRect(app.width/3.2 + 100, app.height*0.5, app.width//4, app.height*.1, fill = 'gray', border = 'black')
+    drawLabel('Start', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.5 + (app.height*.1)//2, 
+              size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+    drawRect(app.width/3.2 + 100, app.height*0.625, app.width//4, app.height*.1, fill = 'gray', border = 'black')
+    drawLabel('Characters', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.625 + (app.height*.1)//2, 
+              size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+    drawRect(app.width/3.2 + 100, app.height*0.75, app.width//4, app.height*.1, fill = 'gray', border = 'black')
+    drawLabel('How to Play', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.75 + (app.height*.1)//2, 
+              size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+
+"""
+    Label(value, centerX, centerY, size=12, font='arial', bold=False,
+      italic=False, fill='black', border=None, borderWidth=2, opacity=100,
+      rotateAngle=0, align='center', visible=True)
+"""
+

@@ -15,9 +15,16 @@ def restart(app):
 
 def redrawAll(app):
     util.drawMenu(app)
+    util.drawStars(app)
+    util.drawButtons(app)
+
+    
+
+
+    
 
 def onStep(app):
-    pass
+    app.starAngle = (app.starAngle + app.starSpeed) % 360
 
 def main():
     runApp()

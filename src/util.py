@@ -81,14 +81,7 @@ def drawBlock(length, width, height, color):
 
 #Menu Options
 def drawMenu(app):
-    imageWidth, imageHeight = getImageSize('src/krossykartlogo.png')
-    drawImage('src/krossykartlogo.png', 400, 400, width=imageWidth//2, height=imageHeight//2)
+    drawImage('src/krossykartlogo.png', app.width//2, app.height//4, align = 'center')
 
-    pass
-
-
-
-"""
-drawBlock(2, .5, 0, 'red')
 cmu_graphics.run()
-"""
+drawMenu(app)

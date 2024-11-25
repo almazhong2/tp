@@ -12,10 +12,10 @@ def onAppStart(app):
     app.playColor = 'gray'
     app.playerX = app.width//8
     app.playerY = app.height*7/8
-    
-
-def onKeyPress(app, key):
-    pass
+    app.world = [None, 'road', 'road', None, None, 'road', None, None, 'road', None, 'road']
+    app.stepsPerSecond = 1
+    app.terrainOffset = 0
+    app.terrainHeight = 50
 
 def restart(app):
     onAppStart(app)
@@ -27,19 +27,25 @@ def redrawAll(app):
         util.drawButtons(app)
     if app.gameMode:
         #world.drawTerrain(app)
-        world.drawRoad(app)
+        world.drawWorld(app)
+        #world.drawRoad(app)
         player.drawPlayer(app)
 
 def onStep(app):
     app.starAngle = (app.starAngle + app.starSpeed) % 360
     if app.gameMode:
         app.background = 'paleGreen'
+        app.world.pop(0)
+        app.world.append(random.choice([None, None, None, 'road']))  # Add new terrain
+        app.playerY += 1
+        app.stepsPerSecond = 1
+    else:
+        app.stepsPerSecond = 30
 
 def onMousePress(app, mouseX, mouseY):
     if not app.gameMode:
         if util.playButton(mouseX, mouseY):
             app.gameMode = True
-
 
 def onMouseMove(app, mouseX, mouseY):
     if not app.gameMode:

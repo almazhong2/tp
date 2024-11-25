@@ -1,7 +1,7 @@
 from cmu_graphics import *
 import util
 
-app.world = [None, 'road', 'road', None, None, 'road', None, None, None, None]
+app.world = [None, 'road', 'road', None, None, 'road', None, None, None, None, 'road']
 app.roadLeft = app.width//4
 app.roadTop = app.height*7/8
 app.roadWidth = 2*app.width
@@ -11,12 +11,30 @@ app.roadDepth = 100
 def drawTerrain(app):
     util.drawBlock(0, app.height, 2*app.width, 1, app.height*2, 'green')
 
-def drawRoad(app):
-    util.drawBlock(app.width//4, app.height*7/8, 2*app.width, 1, 75, 'gray')
-    drawDashes(app)
+def drawRoad(app, i):
+    y = app.height - (i + 1) * (app.height // len(app.world))
+    util.drawBlock(app.width//4, y, 2*app.width, 1, 75, 'gray')
+    drawDashes(app, i)
 
-def drawDashes(app):
-    pass
+def drawDashes(app, i):
+    yRoad = app.height - (i + 1) * (app.height // len(app.world))
+    roadWidth = app.height // len(app.world)
 
-def drawBlock(x, y, width, height, depth, color):
-    pass
+    dashWidth = 50
+    dashGap = 30
+    dashDepth = 10
+    dashes = (app.width + dashGap) // (dashWidth + dashGap) + 1
+    xStart = 0
+    yStart = yRoad - roadWidth//2 + dashWidth//2 - dashWidth // 5
+
+    for j in range(dashes):
+        x = xStart + j * (dashWidth + dashGap)
+        util.drawBlock(x, yStart, dashWidth, 5, dashDepth, 'white')        
+
+
+def drawWorld(app):
+    for i in range (len(app.world)):
+        terrain = app.world[i]
+        if terrain == 'road':
+            drawRoad(app, i)
+            drawDashes(app, i)

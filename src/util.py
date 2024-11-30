@@ -125,6 +125,46 @@ def drawButtons(app):
     drawLabel('How to Play', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.75 + (app.height*.1)//2, 
               size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
 
+#characterselection
+#drawingBoard from CMU CS academy tetris
+charColors = [['crimson', 'orange', 'darkCyan'], 
+              ['mediumSlateBlue', 'violet', 'saddleBrown'], 
+              ['aliceBlue', 'mintCream', 'mistyRose']]
+
+app.cellBorderWidth = 1
+def drawBoard(app):
+    for row in range(3):
+        for col in range(3):
+            drawCell(app, row, col, charColors[row][col])
+
+#draws a rectangular cell utilizing cell coordinate and size
+def drawCell(app, row, col, color):
+    cellLeft, cellTop = getCellLeftTop(app, row, col)
+    cellWidth, cellHeight = getCellSize(app)
+    drawRect(cellLeft, cellTop, cellWidth, cellHeight,
+             fill= color, border='black',
+             borderWidth=app.cellBorderWidth)
+
+#cell helper to get top-left coordinate
+def getCellLeftTop(app, row, col):
+    cellWidth, cellHeight = getCellSize(app)
+    cellLeft = app.width//5 + col * cellWidth
+    cellTop = app.height//5 + row * cellHeight
+    return (cellLeft, cellTop)
+
+#size of the cells
+def getCellSize(app):
+    cellWidth = 500 / 3
+    cellHeight = 500 / 3
+    return (cellWidth, cellHeight)
+
+#final border for board
+def drawBoardBorder(app):
+  # draw the board outline (with double-thickness):
+  drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
+           fill=None, border='black',
+           borderWidth=2*app.cellBorderWidth)
+
 #CS academy intersection conditions (4.3.5)    
 def playButton(mouseX, mouseY):
     right = app.width/3.2 + 100 + app.width//4
@@ -132,6 +172,15 @@ def playButton(mouseX, mouseY):
     if (app.width/3.2 + 100 <= mouseX <= right) and (app.height*0.5 <= mouseY <= bottom):
         return True
     return False
+
+def charButton(mouseX, mouseY):
+    right = app.width/3.2 + 100 + app.width//4
+    bottom = app.height*0.625 + app.height*0.1
+    if (app.width/3.2 + 100 <= mouseX <= right) and (app.height*0.625 <= mouseY <= bottom):
+        app.background = 'lightSkyBlue'
+        return True
+    return False
+
 
 def getVertices(x, y, width, height, depth):
     w, h = width//2, height//2
@@ -163,6 +212,24 @@ def getVertices(x, y, width, height, depth):
 
 #new way: draw 3 polygons using depth perception
 def drawBlock(x, y, width, height, depth, color):
+    vertices = getVertices(x, y, width, height, depth)
+
+    #dictionary of 3 sides visible, and the index of vertex to access from vertices
+    faceVertices = {'front': [0, 1, 5, 4],
+                    'top': [4, 5, 6, 7],
+                    'side': [1, 2, 6, 5]
+                    }
+    
+    for side in faceVertices:
+        indexList = faceVertices[side]
+        points = [] 
+        for index in indexList:
+            vx, vy = vertices[index]
+            points.extend([vx, vy]) #in format for polygon
+        drawPolygon(*points, fill = color)
+
+
+def drawBorderBlock(x, y, width, height, depth, color):
     vertices = getVertices(x, y, width, height, depth)
 
     #dictionary of 3 sides visible, and the index of vertex to access from vertices

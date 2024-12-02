@@ -1,17 +1,15 @@
 from cmu_graphics import *
 
 class Car: #in 2D for now
-    def __init__(self, x, y, width, height, color):
-        self.x = x
-        self.y = y
+    def __init__(self, x, width, height, color, speed, tier):
+        self.x = 50
         self.width = width
         self.height = height
         self.color = color
+        self.speed = speed 
+        self.index = tier
+        #self.y = app.height - (tier + 1) * (app.height // len(app.world))
 
-    def drawCar(app, i):
-    colors = ['oliveDrab', 'cornflowerBlue', 'darkMagenta', 'deepPink']
-    width = random.randint(25, 75)
-    height = random.randint(25, 75)
-    depth = 25
-    y = app.height - (i + 1) * (app.height // len(app.world))
-    util.drawBorderBlock(50, y, width, height, depth, random.choice(colors))    
+    
+    def move(self):
+        self.x += self.speed

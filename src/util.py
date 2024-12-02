@@ -109,16 +109,21 @@ app.playHeight = app.height*0.1
 
 
 def drawButtons(app):
+    #play button
     drawRect(app.width/3.2 + 100, app.height*0.5, 
              app.width//4, app.height*0.1, 
              fill = app.playColor, border = 'black')
     drawLabel('Start', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.5 + (app.height*.1)//2, 
               size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+    
+    #char button
     drawRect(app.width/3.2 + 100, app.height*0.625, 
              app.width//4, app.height*0.1, 
-             fill = 'gray', border = 'black')
+             fill = app.charColor, border = 'black')
     drawLabel('Characters', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.625 + (app.height*.1)//2, 
               size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+    
+    #how to button
     drawRect(app.width/3.2 + 100, app.height*0.75, 
              app.width//4, app.height*.1, 
              fill = 'gray', border = 'black')
@@ -126,7 +131,7 @@ def drawButtons(app):
               size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
 
 #characterselection
-#drawingBoard from CMU CS academy tetris
+#drawingBoard from CMU CS academy Creative Task: Tetris
 charColors = [['crimson', 'orange', 'darkCyan'], 
               ['mediumSlateBlue', 'violet', 'saddleBrown'], 
               ['aliceBlue', 'mintCream', 'mistyRose']]
@@ -177,7 +182,6 @@ def charButton(mouseX, mouseY):
     right = app.width/3.2 + 100 + app.width//4
     bottom = app.height*0.625 + app.height*0.1
     if (app.width/3.2 + 100 <= mouseX <= right) and (app.height*0.625 <= mouseY <= bottom):
-        app.background = 'lightSkyBlue'
         return True
     return False
 

@@ -74,16 +74,26 @@ def onStep(app):
         if app.counter % int(app.stepsPerSecond*.75)== 0:
             terrain = py_random.choice(['grass', 'road', 'lake'])
             app.world.append(terrain)
-            #if terrain == 'road':
-                #world.createCars(app, len(app.world) - 1)
-            app.world.pop(0)
-    
+            if terrain == 'road':
+                world.createCars(app, len(app.world) - 1)
+            gone = app.world.pop(0)
+            if gone == 'road' and len(app.cars) != 0:
+                app.cars.pop(0)
+
+            for cars in app.cars:
+                for car in cars:
+                    car.index += 1
+            
+            
+                    
         app.player.updateHop()
         
-        #world.updateCars(app)
+        world.updateCars(app)
     
     if app.carTimer > 0:
         app.carTimer -= 1
+
+    
 
 def onMousePress(app, mouseX, mouseY):
     if app.menuMode:

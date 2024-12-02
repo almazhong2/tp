@@ -17,43 +17,15 @@ def drawRoad(app, i):
     y = app.height - (i + 1) * (app.height // len(app.world))
     util.drawBlock(app.width//4, y, 2*app.width, 1, 75, 'gray')
     drawDashes(app, i)
+    drawCars(app, app.cars[i], i)
 
 
-#cars
-#drawing the cars that appear on road
-def drawCars(app, i):
-    if i < len(app.cars):
-        cars = app.cars[i]
-    else:
-        cars = []
-    
+def drawCars(app, cars, i):
     for car in cars:
-        drawCar(app, i, car)
+        carDepth = 25
+        car.y = app.height - (i + 1) * (app.height // len(app.world))
+        util.drawBorderBlock(car.x, car.y, car.width, car.height, carDepth, car.color)
 
-#drawing individual car
-def drawCar(app, i, car):
-    carDepth = 25
-    y = app.height - (i + 1) * (app.height // len(app.world))
-    util.drawBorderBlock(car.x, y, car.width, car.height, carDepth, car.color)
-
-
-#depending on cars and road terrain, create these random cars and add to app.cars
-def createCars(app, i):
-    cars = []
-    prevX = 0
-    totalCars = py_random.randint(2, 6)
-    for _ in range(totalCars):
-        colors = ['oliveDrab', 'cornflowerBlue', 'darkMagenta', 'deepPink']
-        width = py_random.randint(25, 76)
-        height = py_random.randint(25, 76)
-        speed = 15
-        x = py_random.randint(prevX - 500, prevX - 100)
-        prevX = x
-        cars.append(Car(x, width, height, py_random.choice(colors), speed, i))
-    
-    app.cars.append(cars)
-
-#updating car movement
 def updateCars(app):
     for cars in app.cars:
         for car in cars:
@@ -61,12 +33,8 @@ def updateCars(app):
             #CMU CS Academy 6.3.2 Wraparound
             if car.x > app.width + car.width:
                 car.x = -car.width
-            
-            """
-            if car.index < len(app.world):
-                car.y = app.height - (len(app.world) - 1 + 1) * (app.height // len(app.world))
-            """
 
+#depending on cars and road terrain, create these random cars and add to app.cars
 
 def drawDashes(app, i):
     yRoad = app.height - (i + 1) * (app.height // len(app.world))
@@ -91,15 +59,16 @@ def drawLake(app, i):
     y = app.height - (i + 1) * (app.height // len(app.world))
     util.drawBlock(app.width//4, y, 1.5*app.width, 1, 75, gradient('lightCyan', 'lightSkyBlue', 'skyBlue', 'deepSkyBlue', start = 'center'))
 
+#drawTraintracks
+#drawTrain
+
+
 def drawWorld(app):
     for i in range (len(app.world)):
         terrain = app.world[i]
         if terrain == 'road':
             drawRoad(app, i)
-            drawDashes(app, i)
-            drawCars(app, i)
         elif terrain == 'grass':
             drawGrass(app, i)
         elif terrain == 'lake':
             drawLake(app, i)
-

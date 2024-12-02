@@ -14,7 +14,7 @@ def drawPlayer(app):
 #will snap the player to be aligned with the terrain
 def snapTerrainY(app, i):
     tierHeight = app.height // len(app.world)
-    y = app.height - (i + 1)*tierHeight + 40
+    y = app.height - (i + 1)*tierHeight
     return y
 
 def snapTerrainX(app, j):
@@ -41,13 +41,16 @@ class Player:
         self.isHopping = False
         
     
-    def hop(self, x2, y2):
+    def hop(self):
         if self.isHopping == False:
+            
+            """
             self.x1 = self.x
             self.y1 = self.y
 
             self.x2 = x2
             self.y2 = y2
+            """
 
             self.currentFrame = 0
             self.isHopping = True
@@ -55,17 +58,19 @@ class Player:
     def updateHop(self):
         if self.isHopping:
             time = self.currentFrame / self.totalFrames
+            self.y = self.y = (1-time)*self.y1 + time*self.y2
+            self.y += 4*self.hopHeight*(time - 0.5)**2
 
+            """
             #chatGPT: formulas for frame by frame hopping (in a parabolic motion)
             self.x = (1-time)*self.x1 + time*self.x2 
             self.y = (1-time)*self.y1 + time*self.y2
             self.y -= 4*self.hopHeight*(time - 0.5)**2
-
+            """
             self.currentFrame +=1
 
             if self.currentFrame >= self.totalFrames:
-                self.x = self.x2
-                self.y = self.y2
+                self.y = self.y
                 self.isHopping = False
     
     def snapTerrain(self, app, i, j):

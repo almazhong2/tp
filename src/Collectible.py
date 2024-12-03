@@ -1,5 +1,7 @@
 from cmu_graphics import *
 import util
+from player import *
+
 
 class Collectible:
     def __init__(self, app, xindex, yindex):
@@ -13,26 +15,36 @@ class Collectible:
         self.depth = self.baseDepth
         self.color = None
         self.shrink = True #starts with shrinking
+        self.collected = False
     
     def animate(self):
         factor = 0.75
-
-        if self.shrink:
+        if self.width > 0 and self.shrink:
             self.width -= 1
             self.height -= 1
             self.depth -= .25
             if self.width < self.dimension*factor:
                 self.shrink = False
-        else:
+        elif self.width > 0:
             self.width += 1
             self.height += 1
             self.depth += .25
             if self.width >= self.dimension:
                 self.shrink = True 
-
-
-
-
+    
+    def collect(self, app, obj):
+        left, right, top, bottom = util.getBoundaries(util.getVertices(obj.x, obj.y, obj.width, obj.height, obj.depth))
+        #CMU Cs academy 4.3.5 point-rectangle intersection
+        c1 = left <= self.x <= right 
+        c2 = top <= self.y <= bottom
+        
+        return c1 and c2
+    
+    def distance(self, app, obj):
+    # Use the distance formula to find the distance
+    # from the point (x0, y0) to the point (x1, y1)
+        return ((self.x - obj.x)**2 + (self.y - obj.y)**2)**0.5
+        
 #for player
 """
 def snapTerrainY(app, i):
@@ -73,6 +85,22 @@ class Powerdown(Collectible):
         super().__init__(app, xindex, yindex)
         self.color = 'red'
 
+def getTerrainIndex(app, x, y):
+    tierWidth = app.width // 15  
+    tierHeight = app.height // len(app.world) 
+    xindex = int(x // tierWidth)
+    yindex = int((app.height - y) // tierHeight)
+    
+    return xindex, yindex
 
+def main():
+    collectible =  Collectible(app, 7, 0)
+    player = Player(200, 400, 50, 10)
+    print(collectible.x)
+    print(collectible.y)
+    print(getTerrainIndex(app, collectible.x, collectible.y))
+    print(getTerrainIndex(app, player.x, player.y))
+    print(collectible.distance(app, player))
 
+main()
 

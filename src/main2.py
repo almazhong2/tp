@@ -77,21 +77,17 @@ def onStep(app):
     if app.counter > app.stepsPerSecond * 100:
         app.counter = 0
 
-    if app.gameMode:     
+    if app.gameMode:    
         app.player.updateHop()
-        app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-        
+        app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)        
         world.updateCars(app)
         world.updateCollectibles(app)
+        #popCollectibles(app, app.player)
+
     
-        if carCollision(app, app.player) and not app.player.isHopping:
-            print("Collision detected!")
-            app.gameOver = True
+        #if carCollision(app, app.player) and not app.player.isHopping:
+            #app.gameOver = True
         
-        for colList in app.collectibles:
-            for col in colList:
-                if isinstance(col, Collectible) and collected(app, col, app.player):
-                    app.gameOver = True
         
         
 def carCollision(app, obj):
@@ -103,29 +99,19 @@ def carCollision(app, obj):
                 return True
     return False
 
-def collected(app, col, obj):
-    colLeft, colRight, colTop, colBottom = util.getBoundaries(util.getVertices(col.x, col.y, col.width, col.height, col.depth))
-    left, right, top, bottom = util.getBoundaries(util.getVertices(obj.x, obj.y, obj.width, obj.height, obj.depth))
-    
-    c1 = colLeft >= left and colRight <= right
-    c2 = colTop >= top and colBottom <= bottom
-    
-    return c1 and c2 and not app.player.isHopping
 
-    
-    return (
-        smaller.left >= larger.left and
-        smaller.top >= larger.top and
-        smaller.right <= larger.right and
-        smaller.bottom <= larger.bottom
-    )
-
-def colCollision(app, obj):
+def distance(x0, y0, x1, y1):
+    # Use the distance formula to find the distance
+    # from the point (x0, y0) to the point (x1, y1)
+    return ((x1 - x0)**2 + (y1 - y0)**2)**0.5
+"""
+def updateCollectibleList(app):
     for colList in app.collectibles:
-        for col in colList:
-            if isinstance(col, Collectible):
-                if col.x == obj.x and abs(col.y - obj.y) < 10:
-                    return True
+        for xindex in range(len(colList)):
+            col = colList[xindex]
+            if col != 'no' and col.collect(app, app.player):
+                colList[xindex] = 'no'
+"""
     
 def onMousePress(app, mouseX, mouseY):
     if app.menuMode:
@@ -156,6 +142,7 @@ def onMouseMove(app, mouseX, mouseY):
 
 #test on key press
 def onKeyPress(app, key):
+    popCols(app)
     if app.gameMode:
         if key == 'up' or key == 'w':
             app.player.hop()
@@ -175,12 +162,34 @@ def onKeyPress(app, key):
             newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
             app.player.x = newX
 
+
+
+def popCols(app):
+     for tier in range(len(app.collectibles)):
+        colList = app.collectibles[tier]
+        for xindex in range(len(colList)):
+            col = colList[xindex]
+            if isinstance(col, Collectible):
+                x1 = getXIndex(app, col.x)
+                x2 = getXIndex(app, app.player.x)
+                y = app.height - (tier + 1) * (app.height // len(app.world)) + 50
+                if x1 == x2 and int(abs(app.player.y - y)) < 25:
+                    app.collectibles[tier][xindex] = 'no'
+
+
+def getXIndex(app, x):
+    tierWidth = app.width//15  
+    xindex = int(x//tierWidth)
+    return xindex
+
+
 def updateWorld(app):
     if app.prevTerrain == 'lake':
         terrain = py_random.choice(['grass', 'road'])
     else:
         terrain = py_random.choice(['grass', 'road', 'lake'])
-    app.world.append(terrain)
+
+
     if terrain == 'road':
         cars = []
         totalCars = py_random.randint(2, 4)
@@ -228,13 +237,15 @@ def updateWorld(app):
                 collectibles[index] = 'no'
     else:
         app.logs.append(['no']*15)
-    app.collectibles.append(collectibles)
 
+    
+    app.collectibles.pop(0)
     app.world.pop(0)
     app.cars.pop(0)
     app.greenery.pop(0)
     app.logs.pop(0)
-    app.collectibles.pop(0)
+    app.world.append(terrain)
+    app.collectibles.append(collectibles)
     app.prevTerrain = terrain
 
 
@@ -281,6 +292,11 @@ def getCollectible(app, xindex, tier):
         elif colType == 'down':
             obj = Powerdown(app, xindex, tier)
     return obj
+
+def transformWorld(app):
+    choice = py_random.choice(['grass', 'road'])
+    app.world = [py_random.choice(['grass', 'road'])]*4 + ['grass'] + [py_random.choice(['grass', 'road'])]*6
+
 
 def main():
     runApp()

@@ -119,27 +119,13 @@ def drawCollectibles(app, xindex, tier, colList):
         x = snapTerrain(app, xindex)
         y = app.height - (tier + 1) * (app.height // len(app.world)) + 50
         util.drawBorderBlock(x, y, col.width, col.height, col.depth, col.color)
-    
-    
-
-"""
-def getColType(obj, xindex, tier):
-    if obj == 'coin':
-        return Coin(app, xindex, tier)
-    elif obj == 'up':
-        return Powerup(app, xindex, tier)
-    elif obj == 'down':
-        return Powerdown(app, xindex, tier)
-    return None
-"""
-
 
 def drawWorld(app):
     for i in range (len(app.world)):
         terrain = app.world[i]
         if i < len(app.collectibles):
             colList = app.collectibles[i]
-            for xindex in range(len(colList)):
+            for xindex in range(1, len(colList)):
                 drawCollectibles(app, xindex, i, colList)
         if terrain == 'road':
             drawRoad(app, i)
@@ -147,8 +133,6 @@ def drawWorld(app):
             drawGrass(app, i)
         elif terrain == 'lake':
             drawLake(app, i)
-
-        
 
 
 def updateCollectibles(app):
@@ -158,6 +142,8 @@ def updateCollectibles(app):
             if isinstance(col, Collectible):
                 col.animate()
                 
+                
+        
                     
             
 

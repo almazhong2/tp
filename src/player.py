@@ -1,6 +1,5 @@
 from cmu_graphics import *
 import util
-import world
 
 app.playerColor = 'violet'
 app.depth = 25

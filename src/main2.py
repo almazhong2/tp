@@ -32,11 +32,12 @@ def onAppStart(app):
     #app.playerY = app.height*7/8
 
     #starting world
-    app.world = ['lake', 'road', 'road', 'grass', 'lake', 'road', 'grass', 'lake', 'road', 'grass', 'road']
+    app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
 
     #timer events
     app.stepsPerSecond = 30
     app.counter = 0
+    app.gameOver = False
 
 
     #player animations
@@ -63,6 +64,8 @@ def redrawAll(app):
         drawLabel(f'Total Hops: {app.hopCount}', app.width//2, 50, size = 50, font = 'orbitron', 
                   bold = True, fill = gradient('lightBlue', 'blue', 'black', start = 'top'), 
                   borderWidth = 2, align = 'center')
+        if app.gameOver:
+            drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
     
     if app.charMode:
         util.drawBoard(app)
@@ -80,6 +83,15 @@ def onStep(app):
         app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
         world.updateCars(app)
         world.updateCollectibles(app)
+        if carCollision(app):
+            app.gameOver = True
+        
+def carCollision(app):
+    for cars in app.cars:
+        for car in cars:
+            if car.collision(app.player):
+                return True
+    return False
 
 
 def onMousePress(app, mouseX, mouseY):

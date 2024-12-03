@@ -11,8 +11,6 @@ class Collectible:
         self.height = self.dimension
         self.depth = self.baseDepth
         self.color = None
-        self.currentFrame = 0
-        self.frames = 0
         self.shrink = True #starts with shrinking
     
     def animate(self):
@@ -31,9 +29,12 @@ class Collectible:
             if self.width >= self.dimension:
                 self.shrink = True
 
-    def collision():
-        pass
+    def collision(self, player):
+        xcollision = self.x >= player.x + player.width and player.x < self.x + self.width
+        ycollision = self.y < player.y + player.height and player.y < self.y + self.height
 
+        return xcollision and ycollision
+    
 class Coin(Collectible):
     def __init__(self, app, xindex, yindex):
         super().__init__(app, xindex, yindex)

@@ -27,6 +27,9 @@ class Player:
     def __init__(self, x, y, hopHeight, frames):
         self.x = x
         self.y = y
+        
+        self.width = 75
+        self.height = 50
 
         #hopping coordinates start off stationary
         self.x1 = x
@@ -40,7 +43,17 @@ class Player:
         self.totalFrames = frames
         self.isHopping = False
         
+    def getTier(self, app):
+        y = self.y
+        tierHeight = app.height // len(app.world)
+        tier = ((app.height - y) // tierHeight) - 1
+
+        if tier < 0:
+            tier = 0
+        elif tier >= len(app.world):
+            tier = len(app.world) - 1
     
+
     def hop(self):
         if self.isHopping == False:
             

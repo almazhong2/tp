@@ -1,4 +1,5 @@
 from cmu_graphics import *
+import util
 
 class Collectible:
     def __init__(self, app, xindex, yindex):
@@ -27,13 +28,34 @@ class Collectible:
             self.height += 1
             self.depth += .25
             if self.width >= self.dimension:
-                self.shrink = True
+                self.shrink = True 
 
-    def collision(self, player):
-        xcollision = self.x >= player.x + player.width and player.x < self.x + self.width
-        ycollision = self.y < player.y + player.height and player.y < self.y + self.height
 
-        return xcollision and ycollision
+
+
+#for player
+"""
+def snapTerrainY(app, i):
+    tierHeight = app.height // len(app.world)
+    y = app.height - (i + 1)*tierHeight + 60
+    return y
+
+def snapTerrainX(app, j):
+    tierWidth = app.width // 15 #allow 15 hops width
+    x = tierWidth * (j) 
+    return x
+"""
+#for collectible
+
+def snapTerrainY(app, i):
+    tierHeight = app.height // len(app.world)
+    y = app.height - (i + 1)*tierHeight + 50
+    return y
+
+def snapTerrainX(app, j):
+    tierWidth = app.width // 15 #allow 15 hops width
+    x = tierWidth * (j) 
+    return x
     
 class Coin(Collectible):
     def __init__(self, app, xindex, yindex):
@@ -45,19 +67,12 @@ class Powerup(Collectible):
         super().__init__(app, xindex, yindex)
         self.color = 'blue'
 
+
 class Powerdown(Collectible):
     def __init__(self, app, xindex, yindex):
         super().__init__(app, xindex, yindex)
         self.color = 'red'
 
 
-def snapTerrainY(app, i):
-    tierHeight = app.height // len(app.world)
-    y = app.height - (i + 1)*tierHeight + 50
-    return y
 
-def snapTerrainX(app, j):
-    tierWidth = app.width // 15 #allow 15 hops width
-    x = tierWidth * (j) 
-    return x
 

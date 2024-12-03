@@ -18,7 +18,7 @@ def drawTerrain(app):
 def drawRoad(app, i):
     y = app.height - (i + 1) * (app.height // len(app.world))
     util.drawBlock(app.width//4, y, 2*app.width, 1, 75, 'gray')
-    drawDashes(app, i)   
+    drawDashes(app, i)
     drawCars(app, app.cars[i], i)     
 
 
@@ -34,13 +34,15 @@ def drawCars(app, cars, i):
 
 def updateCars(app):
     for cars in app.cars:
-        if len(cars) > 0:
-            groupOffset = min(car.x for car in cars)
         for car in cars:
             car.move() 
-            #CMU CS Academy 6.3.2 Wraparound
-            if car.x > app.width + car.width:
-                car.x = -car.width
+            #CMU CS Academy 6.3.2 Wraparound Motion
+            if car.direction == 'right':
+                if car.x > app.width + car.width:
+                    car.x = -car.width
+            else:
+                if car.x + car.width <= 0:
+                    car.x = app.width + car.width 
 
 #depending on cars and road terrain, create these random cars and add to app.cars
 
@@ -82,7 +84,7 @@ def drawTree(x, y):
     util.drawBorderBlock(x, y, 50, 60, 25, 'forestGreen')
 
 def drawBush(x, y):
-    util.drawBorderBlock(x, y, 50, 40, 25, 'green')
+    util.drawBorderBlock(x, y, 50, 40, 25, 'yellowGreen')
 
 
 #for bushes
@@ -116,7 +118,9 @@ def drawCollectibles(app, xindex, tier, colList):
     if col != 'no':
         x = snapTerrain(app, xindex)
         y = app.height - (tier + 1) * (app.height // len(app.world)) + 50
-        util.drawBlock(x, y, col.width, col.height, col.depth, col.color)
+        util.drawBorderBlock(x, y, col.width, col.height, col.depth, col.color)
+    
+    
 
 """
 def getColType(obj, xindex, tier):
@@ -149,9 +153,13 @@ def drawWorld(app):
 
 def updateCollectibles(app):
     for colList in app.collectibles:
-        for col in colList:
+        for xindex in range(len(colList)):
+            col = colList[xindex]
             if isinstance(col, Collectible):
                 col.animate()
+                
+                    
+            
 
         
         

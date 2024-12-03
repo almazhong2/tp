@@ -214,6 +214,36 @@ def getVertices(x, y, width, height, depth):
             topBackRight, topBackLeft
             ]
 
+#similar to 2d: getting a left, top, right, bottom for a rectangle (boundaries of a block) 
+def getBoundaries(vertices):
+    left, right, top, bottom = 0, 0, 0, 0
+    
+    xvals = []
+    yvals = []
+    for vertex in vertices:
+        x = vertex[0]
+        y = vertex[1]
+        xvals.append(x)
+        yvals.append(y)
+
+    left = min(xvals)
+    right = max(xvals)
+    top = min(yvals)
+    bottom = max(yvals)
+
+    return left, right, top, bottom
+
+def collision(obj1, obj2):
+    left1, right1, top1, bottom1 = getBoundaries(getVertices(obj1.x, obj1.y, obj1.width, obj1.height, obj1.depth))
+    left2, right2, top2, bottom2 = getBoundaries(getVertices(obj2.x, obj2.y, obj2.width, obj2.height, obj2.depth))
+    
+    #CMU CS Academy 4.3.5 rectangle-rectangle intersection
+    c1 = right2 >= left1 and right1 >= left2 #x intersect
+    c2 = bottom2 >= top1 and bottom1 >= top2 #y intersect
+
+    return c1 and c2
+
+
 #new way: draw 3 polygons using depth perception
 def drawBlock(x, y, width, height, depth, color):
     vertices = getVertices(x, y, width, height, depth)

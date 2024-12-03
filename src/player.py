@@ -14,7 +14,7 @@ def drawPlayer(app):
 #will snap the player to be aligned with the terrain
 def snapTerrainY(app, i):
     tierHeight = app.height // len(app.world)
-    y = app.height - (i + 1)*tierHeight + 55
+    y = app.height - (i + 1)*tierHeight + 60
     return y
 
 def snapTerrainX(app, j):
@@ -37,6 +37,8 @@ class Player:
 
         self.x2 = x
         self.y2 = y
+
+        self.depth = 25
 
         self.hopHeight = hopHeight
         self.currentFrame = 0

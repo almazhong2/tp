@@ -5,13 +5,31 @@ class Collectible:
         self.index = xindex
         self.x = snapTerrainX(app, xindex)
         self.y = snapTerrainY(app, yindex)
-        self.width = 50
-        self.height = 50
+        self.dimension = 40
+        self.baseDepth = 10
+        self.width = self.dimension
+        self.height = self.dimension
+        self.depth = self.baseDepth
         self.color = None
+        self.currentFrame = 0
+        self.frames = 0
+        self.shrink = True #starts with shrinking
     
     def animate(self):
-        #shrink and expand
-        pass
+        factor = 0.75
+
+        if self.shrink:
+            self.width -= 1
+            self.height -= 1
+            self.depth -= .25
+            if self.width < self.dimension*factor:
+                self.shrink = False
+        else:
+            self.width += 1
+            self.height += 1
+            self.depth += .25
+            if self.width >= self.dimension:
+                self.shrink = True
 
     def collision():
         pass

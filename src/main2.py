@@ -4,7 +4,8 @@ import util
 from player import *
 import world
 from Car import *
-from object import *
+from Collectible import *
+
 
 def onAppStart(app):
     #menu starters
@@ -26,7 +27,8 @@ def onAppStart(app):
     app.cars = [[] for i in range(len(app.world))]
     app.greenery = [[] for i in range(len(app.world))]
     app.logs = [[] for i in range(len(app.world))]
-    #app.collectibles = [[] for i in range(len(app.world))]
+    app.collectibles = [[] for i in range(len(app.world))]
+    app.prevTerrain = None
     #app.playerY = app.height*7/8
 
     #starting world
@@ -42,7 +44,7 @@ def onAppStart(app):
     app.playerYIndex = len(app.world)//2
     app.playerXIndex = 7
     startX, startY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-    app.player = Player(startX, startY, 50, app.stepsPerSecond//3)
+    app.player = Player(startX, startY, 50, app.stepsPerSecond//5)
     
     app.hopCount = 0
 
@@ -70,11 +72,14 @@ def onStep(app):
     app.counter += 1 #timer
     #menu changes
     app.starAngle = (app.starAngle + app.starSpeed) % 360
+    if app.counter > app.stepsPerSecond * 100:
+        app.counter = 0
 
     if app.gameMode:     
         app.player.updateHop()
         app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
         world.updateCars(app)
+        world.updateCollectibles(app)
 
 
 def onMousePress(app, mouseX, mouseY):
@@ -126,18 +131,19 @@ def onKeyPress(app, key):
             app.player.x = newX
 
 def updateWorld(app):
-    terrain = py_random.choice(['grass', 'road', 'lake'])
+    if app.prevTerrain == 'lake':
+        terrain = py_random.choice(['grass', 'road'])
+    else:
+        terrain = py_random.choice(['grass', 'road', 'lake'])
     app.world.append(terrain)
-    #collectibles = []
-    
     if terrain == 'road':
         cars = []
         totalCars = py_random.randint(2, 4)
         for i in range(totalCars):
             offset = 400
             colors = ['oliveDrab', 'cornflowerBlue', 'darkMagenta', 'deepPink']
-            width = py_random.randint(25, 51)
-            height = py_random.randint(25, 51)
+            width = py_random.randint(50, 70)
+            height = py_random.randint(50, 70)
             speed = 15
             x = -(i*offset)
             cars.append(Car(x, width, height, py_random.choice(colors), speed, len(app.world) - 1))
@@ -145,40 +151,36 @@ def updateWorld(app):
     else:
         app.cars.append([])
     
+    collectibles = []
     if terrain == 'grass':
         app.greenery.append(getPlants(app))
-        """
         for index in range(15):
-            if app.greenery[-1][index] != 'tree' or app.greenery[-1][index] != 'bush':
-                #collectibles.append(getCollectible(app, index, len(app.world) - 1))
+            if app.greenery[-1][index] != 'tree' and app.greenery[-1][index] != 'bush':
+                collectibles.append(getCollectible(app, index, len(app.world) - 1))
             else:
-                #collectibles.append(None)
-        app.collectibles.append(collectibles)
-        """
+                collectibles.append('no')
     else:
         app.greenery.append(['no'] * 15)
-        #app.collectibles.append(['no' * 15])
+        collectibles = ['no']*15
 
-    
     if terrain == 'lake':
         app.logs.append(getLogs(app))
-        """
         for index in range(15):
             if app.logs[-1][index] == 'log':
-                collectibles.append(getCollectible(app, py_random.randint(index, index+3), len(app.world) - 1))
+                collectibles[index] = getCollectible(app, py_random.randint(index, index+3), len(app.world) - 1) 
             else:
-                collectibles.append(None)
-        app.collectibles.append(collectibles)
-        """
+                collectibles[index] = 'no'
     else:
-        app.logs.append(['no' * 15])
-        #app.collectibles.append(['no' * 15])
+        app.logs.append(['no']*15)
+    app.collectibles.append(collectibles)
 
     app.world.pop(0)
     app.cars.pop(0)
     app.greenery.pop(0)
     app.logs.pop(0)
-    #app.collectibles.pop(0)
+    app.collectibles.pop(0)
+    app.prevTerrain = terrain
+
 
 def getLogs(app):
     logs = ['no' for xindex in range(15)]
@@ -204,18 +206,19 @@ def getPlants(app):
     return greenery
 
 def getCollectible(app, xindex, tier):
-    chances = ['0']*4 + ['1']*3
+    chances = ['0']*9 + ['1']
     choice = py_random.choice(chances)
-    types = ['coin']*2 + ['up', 'down']
+    types = ['coin']*12 + ['up', 'down']
+    obj = 'no'
     if choice == '1':
         colType = py_random.choice(types)
         if colType == 'coin':
-            return Coin(app, xindex, tier)
+            obj = Coin(app, xindex, tier)
         elif colType == 'up':
-            return Powerup(app, xindex, tier)
+            obj = Powerup(app, xindex, tier)
         elif colType == 'down':
-            return Powerdown(app, xindex, tier)
-    return None
+            obj = Powerdown(app, xindex, tier)
+    return obj
 
 def main():
     runApp()

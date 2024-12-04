@@ -33,6 +33,7 @@ def onAppStart(app):
 
     #starting world
     app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
+    app.seen = []
 
     #timer events
     app.stepsPerSecond = 30
@@ -50,6 +51,7 @@ def onAppStart(app):
     #game counts
     app.hopCount = 0
     app.coinCount = 0
+    app.backCount = 5 
     
     
 
@@ -69,6 +71,10 @@ def redrawAll(app):
                 world.drawCars(app, app.cars[i], i)
         app.player.drawPlayer(app)
         #world.drawCar(app, 2)
+        drawLabel(f'Back Hops Left: {app.backCount}', app.width*.25, 50, size = 50, font = 'orbitron', 
+                  bold = True, fill = 'black', 
+                  borderWidth = 2, align = 'center')
+        
         drawLabel(f'Total Hops: {app.hopCount}', app.width//2, 50, size = 50, font = 'orbitron', 
                   bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
@@ -165,8 +171,15 @@ def onKeyPress(app, key):
             app.player.hop()
             updateWorld(app)
             app.hopCount += 1
+            app.backCount = 5 
             
-        elif (key == 'down' or key == 's'):
+        elif (key == 'down' or key == 's') and backwardLegal(app):
+            reverseWorld(app)
+            if app.backCount > 0:
+                app.backCount -=1
+            else:
+                app.backCount = 0
+            app.hopCount -= 1
             app.player.hop()
 
         elif (key == 'left' or key == 'a') and leftLegal(app):
@@ -182,6 +195,38 @@ def onKeyPress(app, key):
             app.playerXIndex += 1
             newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
             app.player.x = newX
+
+
+def reverseWorld(app):
+    if len(app.seen) > 0:
+        lastTier = app.seen[-1]
+        app.world.insert(0, lastTier['world'])
+        app.collectibles.insert(0, lastTier['cols'])
+        app.greenery.insert(0, lastTier['plants'])
+        app.logs.insert(0, lastTier['logs'])
+        app.cars.insert(0, lastTier['cars'])
+
+        app.world.pop()
+        app.collectibles.pop()
+        app.greenery.pop()
+        app.logs.pop()
+        app.cars.pop()
+        app.seen.pop()
+    else:
+        app.gameOver = True
+
+def backwardLegal(app):
+    tier = 5
+    plantList = app.greenery[tier - 2]    
+    for xindex in range(len(plantList)):
+        plant = plantList[xindex]
+        if plant =='bush' or plant == 'tree':
+            x = world.snapTerrain(app, xindex)
+            if abs(app.player.x - x) == 0:
+                return False
+    if app.backCount == 0:
+        app.gameOver = True
+    return app.backCount > 0
 
 def inWater(app, key):
     if key in ['up','w']:
@@ -200,8 +245,11 @@ def inWater(app, key):
             index = app.playerXIndex + 1
             if index < len(logList):
                 log = logList[index]
-                if log == 'no' and logList[index - 1] == 'no':
-                    return True
+                if log == 'no':
+                    if index + 1 < len(logList) and logList[index + 1] == 'log':
+                        return False
+                    elif logList[index - 1] == 'no':
+                        return True
                 
     elif key in ['left', 'a']:
         tier = 3
@@ -210,9 +258,11 @@ def inWater(app, key):
             index = app.playerXIndex 
             if index < len(logList):
                 log = logList[index]
-                if log == 'no' and logList[index - 1] == 'no':
-                    return True
-    
+                if log == 'no':
+                    if logList[index - 2] == 'log':
+                        return False
+                    elif logList[index - 1] == 'no':
+                        return True
     return False
 
 
@@ -308,6 +358,18 @@ def getXIndex(app, x):
 
 
 def updateWorld(app):
+    maxBackward = 5
+    if len(app.seen) == maxBackward:
+        app.seen.pop(0)
+
+    prevTier = {'world': app.world[0], 
+                'cols': app.collectibles[0],
+                'plants': app.greenery[0],
+                'logs': app.logs[0],
+                'cars': app.cars[0]
+                }
+    app.seen.append(prevTier)
+
     if app.prevTerrain == 'lake':
         terrain = py_random.choice(['grass', 'road'])
     else:
@@ -360,16 +422,15 @@ def updateWorld(app):
         app.logs.append(['no']*15)
 
     app.collectibles.append(collectibles)
+    app.world.pop(0)
     app.collectibles.pop(0)
     app.greenery.pop(0)
     app.logs.pop(0)
     app.cars.pop(0)
-    app.world.pop(0)
     
     
     app.world.append(terrain)
     app.prevTerrain = terrain
-
 
 
 def getLogs(app):

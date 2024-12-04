@@ -96,6 +96,8 @@ def snapTerrain(app, j):
 def drawLake(app, i):
     y = app.height - (i + 1) * (app.height // len(app.world))
     util.drawBlock(app.width//4, y, 1.5*app.width, 1, 75, gradient('lightCyan', 'lightSkyBlue', 'skyBlue', 'deepSkyBlue', start = 'center'))
+    
+    logList = []
     if i < len(app.logs):
         logList = app.logs[i]
     drawLogs(app, logList, i)

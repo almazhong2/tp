@@ -65,4 +65,12 @@ class Powerdown(Collectible):
         super().__init__(app, xindex, yindex)
         self.color = 'red'
 
+def getTerrainIndex(app, x, y):
+    tierWidth = app.width // 15  
+    tierHeight = app.height // len(app.world) 
+    xindex = int(x // tierWidth)
+    yindex = int((app.height - y) // tierHeight)
+    
+    return xindex, yindex
+
 

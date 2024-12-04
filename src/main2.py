@@ -30,6 +30,8 @@ def onAppStart(app):
     app.collectibles = [[] for i in range(len(app.world))]
     app.prevTerrain = None
     #app.playerY = app.height*7/8
+    
+
 
     #starting world
     app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
@@ -52,8 +54,33 @@ def onAppStart(app):
     app.hopCount = 0
     app.coinCount = 0
     app.backCount = 5 
+
+    #powerup functions
+    app.playerColor = 'violet'
+    app.powerup = False
+    app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
+    app.colorIndex = 0
+
+    app.skip = False
+    app.drawSkip = False
+    app.boost = False
+
+
+def powerUp(app): 
+    choices = ['skiplanes', 'starpower', 'rocketboost']
+    choice = py_random.choice(choices)
     
-    
+    if choice == 'starpower':
+        app.powerup = True
+        app.poweruptimer = 150
+    elif choice == 'rocketboost':
+        app.boost = True
+        app.boosttimer = 50
+    elif choice == 'skiplanes':
+        app.drawSkip = True
+        app.skipLabelTimer = 50
+        app.skiptimer = 150
+
 
 def restart(app):
     onAppStart(app)
@@ -74,15 +101,27 @@ def redrawAll(app):
         drawLabel(f'Back Hops Left: {app.backCount}', app.width*.25, 50, size = 50, font = 'orbitron', 
                   bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
-        
+            
         drawLabel(f'Total Hops: {app.hopCount}', app.width//2, 50, size = 50, font = 'orbitron', 
                   bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
-        
+            
         drawLabel(f'Coins: {app.coinCount}', app.width*.75, 50, size = 50, font = 'orbitron', 
                   bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
         
+        if app.boost:
+            drawLabel('BOOSTED! +10 Hops', app.width//2, app.height * .4, size  =50, font = 'orbitron', 
+                      bold = True, fill = 'black', 
+                      borderWidth = 2, align = 'center')
+            drawLabel('press enter to proceed', app.width//2, app.height//2, size = 20, font = 'orbitron',
+                      fill = 'black', align = 'center')
+        
+        if app.drawSkip:
+            drawLabel('Skip Lanes!!', app.width//2, app.height //2, size  =50, font = 'orbitron', 
+                      bold = True, fill = 'black', 
+                      borderWidth = 2, align = 'center')
+
         if app.gameOver:
             drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
     if app.charMode:
@@ -91,8 +130,11 @@ def redrawAll(app):
 
 def onStep(app):
     app.counter += 1 #timer
+    
     #menu changes
     app.starAngle = (app.starAngle + app.starSpeed) % 360
+    
+    #test timer
     if app.counter%app.stepsPerSecond * 3 == 0:
         app.gameOver = False
         
@@ -105,9 +147,29 @@ def onStep(app):
         #correctCols(app)
         #popCollectibles(app, app.player)
 
-    
-        #if carCollision(app, app.player) and not app.player.isHopping:
-            #app.gameOver = True
+        if app.powerup:
+            app.poweruptimer -= 1
+            app.colorIndex = (app.colorIndex + 1) % len(app.powerupColors)
+            app.playerColor = app.powerupColors[app.colorIndex]
+            if app.poweruptimer <= 0:
+                app.playerColor = 'violet'
+                app.powerup = False
+        
+        if app.drawSkip:
+            app.skipLabelTimer -= 1
+
+            if app.skipLabelTimer <= 0:
+                app.skip = True
+                app.drawSkip = False
+        
+        if app.skip:
+            app.skiptimer -= 1
+            if app.skiptimer <= 0:
+                app.skip = False
+        
+
+        if carCollision(app, app.player) and not app.player.isHopping:
+            app.gameOver = True
         
         
         
@@ -164,38 +226,105 @@ def onMouseMove(app, mouseX, mouseY):
 #test on key press
 def onKeyPress(app, key):
     popCols(app)
-    if app.gameMode:
-        if (key == 'up' or key == 'w') and forwardLegal(app):
-            if inWater(app, key):
-                app.gameOver = True
-            app.player.hop()
+    
+    if app.boost and key == 'enter':
+        for i in range(10):
             updateWorld(app)
-            app.hopCount += 1
-            app.backCount = 5 
-            
-        elif (key == 'down' or key == 's') and backwardLegal(app):
-            reverseWorld(app)
-            if app.backCount > 0:
-                app.backCount -=1
-            else:
-                app.backCount = 0
-            app.hopCount -= 1
-            app.player.hop()
-
-        elif (key == 'left' or key == 'a') and leftLegal(app):
-            if inWater(app, key):
-                app.gameOver = True
-            app.playerXIndex -= 1
-            newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-            app.player.x = newX
+        while app.world[4] == 'lake':
+            updateWorld(app)
+        app.boost = False
+        app.hopCount += 10 
         
-        elif (key == 'right' or key == 'd') and rightLegal(app):
-            if inWater(app, key):
-                app.gameOver = True
-            app.playerXIndex += 1
-            newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-            app.player.x = newX
+    if app.gameMode:
+        if not app.powerup and not app.skip:
+            if key == 'up' or key == 'w' and forwardLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True                
+                
+                app.player.hop()
+                updateWorld(app)
+                app.hopCount += 1
+                app.backCount = 5                
 
+            elif (key == 'down' or key == 's') and backwardLegal(app):
+                reverseWorld(app)
+                if app.backCount > 0:
+                    app.backCount -=1
+                else:
+                    app.backCount = 0
+                app.hopCount -= 1
+
+            elif (key == 'left' or key == 'a') and leftLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True
+                app.playerXIndex -= 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
+            
+            elif (key == 'right' or key == 'd') and rightLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True
+                app.playerXIndex += 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
+
+        elif app.powerup:
+            if (key == 'up' or key == 'w'):
+                app.player.hop()
+                updateWorld(app)
+                app.hopCount += 1
+                app.backCount = 5 
+                
+            elif (key == 'down' or key == 's'):
+                reverseWorld(app)
+                if app.backCount > 0:
+                    app.backCount -=1
+                else:
+                    app.backCount = 0
+                app.hopCount -= 1
+
+            elif (key == 'left' or key == 'a'):
+                app.playerXIndex -= 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
+            
+            elif (key == 'right' or key == 'd'):
+                app.playerXIndex += 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
+
+        elif app.skip:
+            if key == 'up' or key == 'w' and doubleForwardLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True                
+                
+                app.player.hop()
+                updateWorld(app)
+                updateWorld(app)
+                app.hopCount += 2
+                app.backCount = 5                
+
+            elif (key == 'down' or key == 's') and backwardLegal(app):
+                reverseWorld(app)
+                if app.backCount > 0:
+                    app.backCount -=1
+                else:
+                    app.backCount = 0
+                app.hopCount -= 1
+
+            elif (key == 'left' or key == 'a') and leftLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True
+                app.playerXIndex -= 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
+            
+            elif (key == 'right' or key == 'd') and rightLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True
+                app.playerXIndex += 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
 
 def reverseWorld(app):
     if len(app.seen) > 0:
@@ -231,13 +360,16 @@ def backwardLegal(app):
 def inWater(app, key):
     if key in ['up','w']:
         tier = 5
+        if app.skip:
+            tier = tier+1
         if app.world[tier] == 'lake':
             logList = app.logs[tier]
             index = app.playerXIndex 
             if index < len(logList):
                 log = logList[index]
                 if log == 'no' and logList[index + 1] == 'no' and logList[index - 1] == 'no':
-                    return True
+                    return True      
+        return False
     elif key in ['right', 'd']:
         tier = 3
         if app.world[tier + 1] == 'lake':
@@ -275,7 +407,18 @@ def forwardLegal(app):
             x = world.snapTerrain(app, xindex)
             if abs(app.player.x - x) == 0:
                 return False
-    return True        
+    return True
+
+def doubleForwardLegal(app):
+    tier = 5
+    plantList = app.greenery[tier + 1]    
+    for xindex in range(len(plantList)):
+        plant = plantList[xindex]
+        if plant =='bush' or plant == 'tree':
+            x = world.snapTerrain(app, xindex)
+            if abs(app.player.x - x) == 0:
+                return False
+    return True       
 
 def rightLegal(app):
     tier = 4
@@ -317,18 +460,14 @@ def popCols(app):
                 x2 = getXIndex(app, app.player.x)
                 y = app.height - (tier + 1) * (app.height // len(app.world)) + 50
                 if x1 == x2 and int(abs(app.player.y - y)) < 25:
-                    app.collectibles[tier][xindex] = 'no'
-
                     if type(col) == Coin:
                         app.coinCount += 1
-                    """
                     elif type(col) == Powerup:
-                        util.powerUp(app)
-                    elif type(col) == Powerdown:   
-                    """
-                                 
-    
-    
+                        powerUp(app)
+                    elif type(col) == Powerdown: 
+                        powerDown(app)
+                    col.collected = True  
+                    app.collectibles[tier][xindex] = 'no'  
 
 def correctCols(app):
     for tier in range(len(app.collectibles)):
@@ -476,11 +615,6 @@ def getCollectible(app, xindex, tier):
         elif colType == 'down':
             obj = Powerdown(app, xindex, tier)
     return obj
-
-def transformWorld(app):
-    choice = py_random.choice(['grass', 'road'])
-    app.world = [py_random.choice(['grass', 'road'])]*4 + ['grass'] + [py_random.choice(['grass', 'road'])]*6
-
 
 def main():
     runApp()

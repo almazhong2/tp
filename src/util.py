@@ -1,5 +1,6 @@
 from cmu_graphics import *
 import math
+import random as py_random
 
 #3D projection (~2.5D): from CMU CS Academy 3D graphics video
 app.x, app.y, app.z = 0.25, 2, 3
@@ -241,6 +242,7 @@ def collision(obj1, obj2):
     c1 = right2 >= left1 and right1 >= left2 #x intersect
     c2 = bottom2 >= top1 and bottom1 >= top2 #y intersect
 
+
     return c1 and c2
 
 
@@ -280,6 +282,27 @@ def drawBorderBlock(x, y, width, height, depth, color):
             points.extend([vx, vy]) #in format for polygon
         drawPolygon(*points, fill = color, border = 'black')
 
+def powerUp(app, powerup): 
+    print('starpower triggered!')
+    choices = ['starpower']
+    choice = py_random.choice(choices)
+    if powerup.collected:
+        colors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
+        color = py_random.choice(colors)
+        app.playerColor = color 
+        
+
+
+"""
+if choice == 'starpower':
+        
+"""
+    
+
+
+
+def powerDown(app):
+    pass
 """
     Label(value, centerX, centerY, size=12, font='arial', bold=False,
       italic=False, fill='black', border=None, borderWidth=2, opacity=100,

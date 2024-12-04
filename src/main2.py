@@ -64,6 +64,7 @@ def onAppStart(app):
     app.skip = False
     app.drawSkip = False
     app.boost = False
+    app.drag = False
 
 
 def powerUp(app): 
@@ -80,6 +81,17 @@ def powerUp(app):
         app.drawSkip = True
         app.skipLabelTimer = 50
         app.skiptimer = 150
+
+def powerDown(app):
+    choices = ['drag']
+    choice = py_random.choice(choices)
+
+    if choice == 'drag':
+        app.drag = True
+        app.dragTimer = 150
+    elif choice == 'ink':
+        app.ink = True
+        app.inkTImer = 200
 
 
 def restart(app):
@@ -111,11 +123,19 @@ def redrawAll(app):
                   borderWidth = 2, align = 'center')
         
         if app.boost:
-            drawLabel('BOOSTED! +10 Hops', app.width//2, app.height * .4, size  =50, font = 'orbitron', 
+            drawLabel('BOOSTED! +10 Hops', app.width//2, app.height * .4, size = 50, font = 'orbitron', 
                       bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
             drawLabel('press enter to proceed', app.width//2, app.height//2, size = 20, font = 'orbitron',
                       fill = 'black', align = 'center')
+        
+        if app.drag:
+            drawLabel('DRAGGED! -10 Hops', app.width//2, app.height * .4, size =50, font = 'orbitron', 
+                      bold = True, fill = 'black', 
+                      borderWidth = 2, align = 'center')
+            drawLabel('press enter to proceed', app.width//2, app.height//2, size = 20, font = 'orbitron',
+                      fill = 'black', align = 'center')
+
         
         if app.drawSkip:
             drawLabel('Skip Lanes!!', app.width//2, app.height //2, size  =50, font = 'orbitron', 
@@ -227,48 +247,24 @@ def onMouseMove(app, mouseX, mouseY):
 def onKeyPress(app, key):
     popCols(app)
     
-    if app.boost and key == 'enter':
-        for i in range(10):
-            updateWorld(app)
-        while app.world[4] == 'lake':
-            updateWorld(app)
-        app.boost = False
-        app.hopCount += 10 
+    if key == 'enter':
+        if app.boost:
+            for i in range(10):
+                updateWorld(app)
+            while app.world[4] != 'grass':
+                updateWorld(app)
+            app.boost = False
+            app.hopCount += 10 
+        elif app.drag:
+            for i in range(10):
+                updateWorld(app)
+            while app.world[4] != 'grass':
+                updateWorld(app)
+            app.drag = False
+            app.hopCount -= 10
         
     if app.gameMode:
-        if not app.powerup and not app.skip:
-            if key == 'up' or key == 'w' and forwardLegal(app):
-                if inWater(app, key):
-                    app.gameOver = True                
-                
-                app.player.hop()
-                updateWorld(app)
-                app.hopCount += 1
-                app.backCount = 5                
-
-            elif (key == 'down' or key == 's') and backwardLegal(app):
-                reverseWorld(app)
-                if app.backCount > 0:
-                    app.backCount -=1
-                else:
-                    app.backCount = 0
-                app.hopCount -= 1
-
-            elif (key == 'left' or key == 'a') and leftLegal(app):
-                if inWater(app, key):
-                    app.gameOver = True
-                app.playerXIndex -= 1
-                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-                app.player.x = newX
-            
-            elif (key == 'right' or key == 'd') and rightLegal(app):
-                if inWater(app, key):
-                    app.gameOver = True
-                app.playerXIndex += 1
-                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-                app.player.x = newX
-
-        elif app.powerup:
+        if app.powerup:
             if (key == 'up' or key == 'w'):
                 app.player.hop()
                 updateWorld(app)
@@ -292,7 +288,6 @@ def onKeyPress(app, key):
                 app.playerXIndex += 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
-
         elif app.skip:
             if key == 'up' or key == 'w' and doubleForwardLegal(app):
                 if inWater(app, key):
@@ -325,6 +320,38 @@ def onKeyPress(app, key):
                 app.playerXIndex += 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
+        else:
+            if (key == 'up' or key == 'w') and forwardLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True                
+                
+                app.player.hop()
+                updateWorld(app)
+                app.hopCount += 1
+                app.backCount = 5                
+
+            elif (key == 'down' or key == 's') and backwardLegal(app):
+                reverseWorld(app)
+                if app.backCount > 0:
+                    app.backCount -=1
+                else:
+                    app.backCount = 0
+                app.hopCount -= 1
+
+            elif (key == 'left' or key == 'a') and leftLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True
+                app.playerXIndex -= 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
+            
+            elif (key == 'right' or key == 'd') and rightLegal(app):
+                if inWater(app, key):
+                    app.gameOver = True
+                app.playerXIndex += 1
+                newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+                app.player.x = newX
+
 
 def reverseWorld(app):
     if len(app.seen) > 0:

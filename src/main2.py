@@ -87,8 +87,9 @@ def onStep(app):
     app.counter += 1 #timer
     #menu changes
     app.starAngle = (app.starAngle + app.starSpeed) % 360
-    if app.counter > app.stepsPerSecond * 100:
-        app.counter = 0
+    if app.counter%app.stepsPerSecond * 3 == 0:
+        app.gameOver = False
+        
 
     if app.gameMode:    
         app.player.updateHop()
@@ -159,6 +160,8 @@ def onKeyPress(app, key):
     popCols(app)
     if app.gameMode:
         if (key == 'up' or key == 'w') and forwardLegal(app):
+            if inWater(app, key):
+                app.gameOver = True
             app.player.hop()
             updateWorld(app)
             app.hopCount += 1
@@ -167,19 +170,50 @@ def onKeyPress(app, key):
             app.player.hop()
 
         elif (key == 'left' or key == 'a') and leftLegal(app):
+            if inWater(app, key):
+                app.gameOver = True
             app.playerXIndex -= 1
             newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
             app.player.x = newX
         
         elif (key == 'right' or key == 'd') and rightLegal(app):
+            if inWater(app, key):
+                app.gameOver = True
             app.playerXIndex += 1
             newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
             app.player.x = newX
 
-def inWater(app):
-    tier = 5
-    if tier <
-
+def inWater(app, key):
+    if key in ['up','w']:
+        tier = 5
+        if app.world[tier] == 'lake':
+            logList = app.logs[tier]
+            index = app.playerXIndex 
+            if index < len(logList):
+                log = logList[index]
+                if log == 'no' and logList[index + 1] == 'no' and logList[index - 1] == 'no':
+                    return True
+    elif key in ['right', 'd']:
+        tier = 3
+        if app.world[tier + 1] == 'lake':
+            logList = app.logs[tier + 1]
+            index = app.playerXIndex + 1
+            if index < len(logList):
+                log = logList[index]
+                if log == 'no' and logList[index - 1] == 'no':
+                    return True
+                
+    elif key in ['left', 'a']:
+        tier = 3
+        if app.world[tier + 1] == 'lake':
+            logList = app.logs[tier + 1]
+            index = app.playerXIndex 
+            if index < len(logList):
+                log = logList[index]
+                if log == 'no' and logList[index - 1] == 'no':
+                    return True
+    
+    return False
 
 
 def forwardLegal(app):

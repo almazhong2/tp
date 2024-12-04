@@ -19,7 +19,7 @@ def drawRoad(app, i):
     y = app.height - (i + 1) * (app.height // len(app.world))
     util.drawBlock(app.width//4, y, 2*app.width, 1, 75, 'gray')
     drawDashes(app, i)
-    drawCars(app, app.cars[i], i)     
+    #drawCars(app, app.cars[i], i)     
 
 
 def drawCars(app, cars, i):
@@ -123,16 +123,23 @@ def drawCollectibles(app, xindex, tier, colList):
 def drawWorld(app):
     for i in range (len(app.world)):
         terrain = app.world[i]
-        if i < len(app.collectibles):
-            colList = app.collectibles[i]
-            for xindex in range(1, len(colList)):
-                drawCollectibles(app, xindex, i, colList)
+        
         if terrain == 'road':
             drawRoad(app, i)
         elif terrain == 'grass':
             drawGrass(app, i)
         elif terrain == 'lake':
             drawLake(app, i)
+        
+        if i < len(app.collectibles):
+            colList = app.collectibles[i]
+            for xindex in range(1, len(colList)):
+                drawCollectibles(app, xindex, i, colList)
+        """
+        
+        if terrain == 'road' and i < len(app.cars):
+            drawCars(app, app.cars[i], i)
+        """
 
 
 def updateCollectibles(app):

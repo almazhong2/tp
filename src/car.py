@@ -23,16 +23,3 @@ class Car: #in 2D for now
     def __repr__(self):
         return 'car'
     
-    def getTier(self, app):
-        y = self.y
-        tierHeight = app.height // len(app.world)
-        tier = ((app.height - y) // tierHeight) - 1
-        if tier < 0:
-            tier = 0
-        elif tier >= len(app.world):
-            tier = len(app.world) - 1
-    
-    def collision(self, player):
-        xcollision = self.x + self.width >= player.x - player.width
-        return xcollision and self.getTier(app) == 4
-    

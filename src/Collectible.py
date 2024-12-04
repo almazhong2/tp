@@ -38,26 +38,6 @@ class Collectible:
         c1 = left <= self.x <= right 
         c2 = top <= self.y <= bottom
         
-        return c1 and c2
-    
-    def distance(self, app, obj):
-    # Use the distance formula to find the distance
-    # from the point (x0, y0) to the point (x1, y1)
-        return ((self.x - obj.x)**2 + (self.y - obj.y)**2)**0.5
-        
-#for player
-"""
-def snapTerrainY(app, i):
-    tierHeight = app.height // len(app.world)
-    y = app.height - (i + 1)*tierHeight + 60
-    return y
-
-def snapTerrainX(app, j):
-    tierWidth = app.width // 15 #allow 15 hops width
-    x = tierWidth * (j) 
-    return x
-"""
-#for collectible
 
 def snapTerrainY(app, i):
     tierHeight = app.height // len(app.world)
@@ -85,22 +65,4 @@ class Powerdown(Collectible):
         super().__init__(app, xindex, yindex)
         self.color = 'red'
 
-def getTerrainIndex(app, x, y):
-    tierWidth = app.width // 15  
-    tierHeight = app.height // len(app.world) 
-    xindex = int(x // tierWidth)
-    yindex = int((app.height - y) // tierHeight)
-    
-    return xindex, yindex
-
-def main():
-    collectible =  Collectible(app, 7, 0)
-    player = Player(200, 400, 50, 10)
-    print(collectible.x)
-    print(collectible.y)
-    print(getTerrainIndex(app, collectible.x, collectible.y))
-    print(getTerrainIndex(app, player.x, player.y))
-    print(collectible.distance(app, player))
-
-main()
 

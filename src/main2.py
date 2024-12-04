@@ -47,7 +47,11 @@ def onAppStart(app):
     startX, startY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
     app.player = Player(startX, startY, 50, app.stepsPerSecond//5)
     
+    #game counts
     app.hopCount = 0
+    app.coinCount = 0
+    
+    
 
 def restart(app):
     onAppStart(app)
@@ -59,11 +63,20 @@ def redrawAll(app):
         util.drawButtons(app)
     if app.gameMode:
         world.drawWorld(app)
+        for i in range (len(app.world)):
+            terrain = app.world[i]
+            if terrain == 'road' and i < len(app.cars):
+                world.drawCars(app, app.cars[i], i)
         app.player.drawPlayer(app)
         #world.drawCar(app, 2)
         drawLabel(f'Total Hops: {app.hopCount}', app.width//2, 50, size = 50, font = 'orbitron', 
-                  bold = True, fill = gradient('lightBlue', 'blue', 'black', start = 'top'), 
+                  bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
+        
+        drawLabel(f'Coins: {app.coinCount}', app.width*.75, 50, size = 50, font = 'orbitron', 
+                  bold = True, fill = 'black', 
+                  borderWidth = 2, align = 'center')
+        
         if app.gameOver:
             drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
     if app.charMode:
@@ -82,6 +95,7 @@ def onStep(app):
         app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)        
         world.updateCars(app)
         world.updateCollectibles(app)
+        #correctCols(app)
         #popCollectibles(app, app.player)
 
     
@@ -144,25 +158,70 @@ def onMouseMove(app, mouseX, mouseY):
 def onKeyPress(app, key):
     popCols(app)
     if app.gameMode:
-        if key == 'up' or key == 'w':
+        if (key == 'up' or key == 'w') and forwardLegal(app):
             app.player.hop()
             updateWorld(app)
             app.hopCount += 1
             
-        elif key == 'down' or key == 's':
+        elif (key == 'down' or key == 's'):
             app.player.hop()
 
-        elif key == 'left' or key == 'a':
+        elif (key == 'left' or key == 'a') and leftLegal(app):
             app.playerXIndex -= 1
             newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
             app.player.x = newX
         
-        elif key == 'right' or key == 'd':
+        elif (key == 'right' or key == 'd') and rightLegal(app):
             app.playerXIndex += 1
             newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
             app.player.x = newX
 
+def inWater(app):
+    tier = 5
+    if tier <
 
+
+
+def forwardLegal(app):
+    tier = 5
+    plantList = app.greenery[tier]    
+    for xindex in range(len(plantList)):
+        plant = plantList[xindex]
+        if plant =='bush' or plant == 'tree':
+            x = world.snapTerrain(app, xindex)
+            if abs(app.player.x - x) == 0:
+                return False
+    return True        
+
+def rightLegal(app):
+    tier = 4
+    plantList = app.greenery[tier]
+    for xindex in range(len(plantList)):
+        plant = plantList[xindex]
+        newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex + 1)
+        if plant =='bush' or plant == 'tree':
+            x = world.snapTerrain(app, xindex)
+            if abs(newX - x) == 0:
+                return False
+    return True
+
+def leftLegal(app):
+    tier = 4
+    plantList = app.greenery[tier]
+    for xindex in range(len(plantList)):
+        plant = plantList[xindex]
+        newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex - 1)
+        if plant =='bush' or plant == 'tree':
+            x = world.snapTerrain(app, xindex)
+            if abs(newX - x) == 0:
+                return False
+    return True
+
+def getTier(app, y): 
+    tierHeight = app.height // len(app.world) 
+    yindex = int((app.height - y) // tierHeight)
+
+    return yindex
 
 def popCols(app):
      for tier in range(len(app.collectibles)):
@@ -176,6 +235,37 @@ def popCols(app):
                 if x1 == x2 and int(abs(app.player.y - y)) < 25:
                     app.collectibles[tier][xindex] = 'no'
 
+                    if type(col) == Coin:
+                        app.coinCount += 1
+                    """
+                    elif type(col) == Powerup:
+                        util.powerUp(app)
+                    elif type(col) == Powerdown:   
+                    """
+                                 
+    
+    
+
+def correctCols(app):
+    for tier in range(len(app.collectibles)):
+        colList = app.collectibles[tier]
+        for xindex in range(len(colList)):
+            col = colList[xindex]
+            if isinstance(col, Collectible):
+                x1 = getXIndex(app, col.x)
+                logY = app.height - (tier + 1) * (app.height // len(app.world)) - 25
+                colY = app.height - (tier + 1) * (app.height // len(app.world)) + 50
+                plantY = app.height - (tier + 1) * (app.height // len(app.world)) - 40
+                if x1 + 1 < len(app.logs[tier]):
+                    if app.logs[tier][x1] != 'log':
+                        app.collectibles[tier][x1] = 'no'
+                elif app.greenery[tier][x1] == 'no':
+                    app.collectibles[tier][x1] = 'no'
+    """
+    telling if a collectible is on a log
+    if (log index + 3) - collectible x index >= 0
+    if ys match
+    """
 
 def getXIndex(app, x):
     tierWidth = app.width//15  
@@ -216,37 +306,36 @@ def updateWorld(app):
     else:
         app.cars.append([])
     
-    collectibles = []
+    collectibles = ['no'] * 15
     if terrain == 'grass':
         app.greenery.append(getPlants(app))
         for index in range(15):
-            if app.greenery[-1][index] != 'tree' and app.greenery[-1][index] != 'bush':
-                collectibles.append(getCollectible(app, index, len(app.world) - 1))
-            else:
-                collectibles.append('no')
+            if app.greenery[-1][index] == 'no':
+                collectibles[index] = getCollectible(app, index, len(app.world) - 1)
     else:
         app.greenery.append(['no'] * 15)
-        collectibles = ['no']*15
 
+    
     if terrain == 'lake':
         app.logs.append(getLogs(app))
         for index in range(15):
             if app.logs[-1][index] == 'log':
-                collectibles[index] = getCollectible(app, py_random.randint(index, index+3), len(app.world) - 1) 
-            else:
-                collectibles[index] = 'no'
+                #collectibles[index] = getCollectible(app, py_random.randint(index, index+3), len(app.world) - 1)
+                collectibles[index] = getCollectible(app, index, len(app.world) - 1) 
     else:
         app.logs.append(['no']*15)
 
-    
+    app.collectibles.append(collectibles)
     app.collectibles.pop(0)
-    app.world.pop(0)
-    app.cars.pop(0)
     app.greenery.pop(0)
     app.logs.pop(0)
+    app.cars.pop(0)
+    app.world.pop(0)
+    
+    
     app.world.append(terrain)
-    app.collectibles.append(collectibles)
     app.prevTerrain = terrain
+
 
 
 def getLogs(app):

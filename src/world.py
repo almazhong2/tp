@@ -144,12 +144,20 @@ def drawWorld(app):
         """
 
 
+
+def drawInk(app):
+    for ball in app.balls:
+        drawCircle(ball['x'], ball['y'], ball['r'], fill = 'black', opacity = 80)
+
+
+
 def updateCollectibles(app):
     for colList in app.collectibles:
         for xindex in range(len(colList)):
             col = colList[xindex]
             if isinstance(col, Collectible):
                 col.animate()
+
                 
                 
         

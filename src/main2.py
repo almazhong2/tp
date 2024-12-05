@@ -30,8 +30,8 @@ def onAppStart(app):
     app.collectibles = [[] for i in range(len(app.world))]
     app.prevTerrain = None
     #app.playerY = app.height*7/8
-    
 
+    app.ink = False
 
     #starting world
     app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
@@ -66,6 +66,7 @@ def onAppStart(app):
     app.boost = False
     app.drag = False
 
+    app.balls = []
 
 def powerUp(app): 
     choices = ['skiplanes', 'starpower', 'rocketboost']
@@ -83,7 +84,7 @@ def powerUp(app):
         app.skiptimer = 150
 
 def powerDown(app):
-    choices = ['drag']
+    choices = ['ink']
     choice = py_random.choice(choices)
 
     if choice == 'drag':
@@ -91,7 +92,8 @@ def powerDown(app):
         app.dragTimer = 150
     elif choice == 'ink':
         app.ink = True
-        app.inkTImer = 200
+        app.inktimer = 200
+        getInk(app)
 
 
 def restart(app):
@@ -141,6 +143,9 @@ def redrawAll(app):
             drawLabel('Skip Lanes!!', app.width//2, app.height //2, size  =50, font = 'orbitron', 
                       bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
+        
+        if app.ink:
+            world.drawInk(app)
 
         if app.gameOver:
             drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
@@ -187,11 +192,55 @@ def onStep(app):
             if app.skiptimer <= 0:
                 app.skip = False
         
+        if app.ink:
+            app.inktimer -= 1
+            if app.inktimer <= 0:
+                app.ink = False
+            else:
+                #CMU CS Academy 6.3.3 Bouncing Motion
+                for ball in app.balls:
+                    ball['x'] += ball['dx']
+                    ball['y'] += ball['dy']
+
+                    if ball['x'] + ball['r'] >= app.width:
+                        ball['x'] = app.width - ball['r']
+                        ball['dx'] = -1 * ball['dx']
+                    elif ball['x'] - ball['r'] <= 0:
+                        ball['x'] = ball['r']
+                        ball['dx'] = -1 * ball['dx']
+                    
+                    if ball['y'] + ball['r'] >= app.height:
+                        ball['y'] = app.height - ball['r']
+                        ball['dy'] = -1 * ball['dy']
+                    elif ball['y'] - ball['r'] <= 0:
+                        ball['y'] = ball['r']
+                        ball['dy'] = -1 * ball['dy']
+
 
         if carCollision(app, app.player) and not app.player.isHopping:
             app.gameOver = True
         
-        
+
+def bounceHorizontally(app):
+    app.cx += app.dx
+    if app.cx + app.r >= app.width:
+        app.cx = app.width - app.r
+        app.dx = -app.dx
+    elif app.cx - app.r <= 0:
+        app.cx = app.r
+        app.dx = -app.dx
+
+def bounceVertically(app):
+    app.cy += app.dy
+    if app.cy + app.r >= app.height:
+        app.cy = app.height - app.r
+        app.dy = -app.dy
+    elif app.cy - app.r <= 0:
+        app.cy = app.r
+        app.dy = -app.dy
+
+
+
         
 def carCollision(app, obj):
     for index in range(len(app.cars)):
@@ -424,7 +473,6 @@ def inWater(app, key):
                         return True
     return False
 
-
 def forwardLegal(app):
     tier = 5
     plantList = app.greenery[tier]    
@@ -522,7 +570,6 @@ def getXIndex(app, x):
     xindex = int(x//tierWidth)
     return xindex
 
-
 def updateWorld(app):
     maxBackward = 5
     if len(app.seen) == maxBackward:
@@ -598,7 +645,6 @@ def updateWorld(app):
     app.world.append(terrain)
     app.prevTerrain = terrain
 
-
 def getLogs(app):
     logs = ['no' for xindex in range(15)]
     totalLogs = py_random.randint(1, 3)
@@ -642,6 +688,31 @@ def getCollectible(app, xindex, tier):
         elif colType == 'down':
             obj = Powerdown(app, xindex, tier)
     return obj
+
+def getInk(app):
+    app.balls = []
+
+    inkCount = py_random.randint(10, 20)
+    print(f"Creating {inkCount} ink balls")
+
+    for i in range(inkCount):
+        radius = py_random.randint(50, 200)
+        startX = py_random.randint(radius, app.width - radius)
+        startY = py_random.randint(radius, app.height - radius)
+        dX = py_random.randint(10, 20)
+        dY = py_random.randint(10, 20)
+
+        #chatGPT: storing each ball as a dictionary
+        ball = {
+            'x': startX,
+            'y': startY,
+            'dx': dX,
+            'dy': dY,
+            'r': radius
+        }
+        
+        app.balls.append(ball)
+        
 
 def main():
     runApp()

@@ -15,7 +15,6 @@ class Collectible:
         self.depth = self.baseDepth
         self.color = None
         self.shrink = True #starts with shrinking
-        self.collected = False
     
     def animate(self):
         factor = 0.75
@@ -31,13 +30,6 @@ class Collectible:
             self.depth += .25
             if self.width >= self.dimension:
                 self.shrink = True 
-    
-    def collect(self, app, obj):
-        left, right, top, bottom = util.getBoundaries(util.getVertices(obj.x, obj.y, obj.width, obj.height, obj.depth))
-        #CMU Cs academy 4.3.5 point-rectangle intersection
-        c1 = left <= self.x <= right 
-        c2 = top <= self.y <= bottom
-        
 
 def snapTerrainY(app, i):
     tierHeight = app.height // len(app.world)
@@ -48,7 +40,14 @@ def snapTerrainX(app, j):
     tierWidth = app.width // 15 #allow 15 hops width
     x = tierWidth * (j) 
     return x
-    
+
+def getTerrainIndex(app, x, y):
+    tierWidth = app.width // 15  
+    tierHeight = app.height // len(app.world) 
+    xindex = int(x // tierWidth)
+    yindex = int((app.height - y) // tierHeight)
+    return xindex, yindex
+
 class Coin(Collectible):
     def __init__(self, app, xindex, yindex):
         super().__init__(app, xindex, yindex)
@@ -59,18 +58,11 @@ class Powerup(Collectible):
         super().__init__(app, xindex, yindex)
         self.color = 'blue'
 
-
 class Powerdown(Collectible):
     def __init__(self, app, xindex, yindex):
         super().__init__(app, xindex, yindex)
         self.color = 'red'
 
-def getTerrainIndex(app, x, y):
-    tierWidth = app.width // 15  
-    tierHeight = app.height // len(app.world) 
-    xindex = int(x // tierWidth)
-    yindex = int((app.height - y) // tierHeight)
-    
-    return xindex, yindex
+
 
 

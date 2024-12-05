@@ -6,7 +6,7 @@ import world
 from Car import *
 from Collectible import *
 
-
+#big game functions
 def onAppStart(app):
     #menu starters
     app.background = gradient('gray', 'gainsboro', start = 'top')
@@ -14,14 +14,20 @@ def onAppStart(app):
     app.height = 1050
     
     #modes
-    app.gameMode = False
+    app.gameMode = True
     app.charMode = False
-    app.menuMode = True
+    app.menuMode = False
+    app.gameOver = False
+    app.popUp = False
 
     #button colors
     app.playColor = 'gray'
     app.charColor = 'gray'
-    app.howColor = 'gray'
+    app.aboutColor = 'gray'
+
+    #world lists
+    app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
+    app.seen = []
 
     #terrain generation
     app.cars = [[] for i in range(len(app.world))]
@@ -29,102 +35,113 @@ def onAppStart(app):
     app.logs = [[] for i in range(len(app.world))]
     app.collectibles = [[] for i in range(len(app.world))]
     app.prevTerrain = None
-    #app.playerY = app.height*7/8
-
-    app.ink = False
-
-    #starting world
-    app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
-    app.seen = []
 
     #timer events
     app.stepsPerSecond = 30
     app.counter = 0
-    app.gameOver = False
-
-
+    
     #player animations
-    app.player = Player(0, 0, 50, app.stepsPerSecond//2)
+    app.player = Player(0, 0, 50, app.stepsPerSecond//5, 75, 50, 25)
     app.playerYIndex = len(app.world)//2
     app.playerXIndex = 7
     startX, startY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-    app.player = Player(startX, startY, 50, app.stepsPerSecond//5)
+    app.player = Player(startX, startY, 50, app.stepsPerSecond//5, 75, 50, 25)
+    app.charPlayer = Player(app.width*4/5, app.height*0.7, 20, app.stepsPerSecond//5, 450, 300, 150)
     
     #game counts
     app.hopCount = 0
     app.coinCount = 0
     app.backCount = 5 
 
-    #powerup functions
+    #powerup/powerdown functions
+    #starpower
     app.playerColor = 'violet'
     app.powerup = False
     app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
     app.colorIndex = 0
+    app.poweruptimer = 150
+    app.paused = False
 
+    #skiplanes
     app.skip = False
     app.drawSkip = False
+    app.skipLabelTimer = 25
+    app.skiptimer = 150
+
+
+    #boosted/dragged
     app.boost = False
     app.drag = False
 
+    #ink
+    app.ink = False
     app.balls = []
 
-def powerUp(app): 
-    choices = ['skiplanes', 'starpower', 'rocketboost']
-    choice = py_random.choice(choices)
-    
-    if choice == 'starpower':
-        app.powerup = True
-        app.poweruptimer = 150
-    elif choice == 'rocketboost':
-        app.boost = True
-        app.boosttimer = 50
-    elif choice == 'skiplanes':
-        app.drawSkip = True
-        app.skipLabelTimer = 50
-        app.skiptimer = 150
-
-def powerDown(app):
-    choices = ['ink']
-    choice = py_random.choice(choices)
-
-    if choice == 'drag':
-        app.drag = True
-        app.dragTimer = 150
-    elif choice == 'ink':
-        app.ink = True
-        app.inktimer = 200
-        getInk(app)
-
-
-def restart(app):
-    onAppStart(app)
+    #board variables
+    app.currRow = None
+    app.currCol = None
+    app.charColor = app.playerColor
 
 def redrawAll(app):
     if app.menuMode:
         util.drawMenu(app)
         util.drawStars(app)
         util.drawButtons(app)
+    
+    if app.charMode:
+        util.drawBoard(app)
+        app.charPlayer.drawPlayer(app)
+        
+        #back button
+        drawRect(50, 50, app.width//8, app.height//10, 
+                 fill = 'white', border = 'black', borderWidth = 5)
+        drawLabel('back', 50+(app.width//16), 50+app.height//20, size = 50, font = 'orbitron', 
+                  bold = True, fill = 'black', 
+                  borderWidth = 2, align = 'center')
+        
+        #label
+        drawRect(app.width*.6, 200, app.width//4, app.height//5, 
+                 fill = 'white', border = 'black', borderWidth = 5)
+        drawLabel('choose a color!', app.width*.6 +(app.width//8), 200 + app.height//10, size = 50, font = 'orbitron', 
+                  bold = True, fill = 'black', 
+                  borderWidth = 2, align = 'center')
+        
+    
     if app.gameMode:
         world.drawWorld(app)
         for i in range (len(app.world)):
             terrain = app.world[i]
             if terrain == 'road' and i < len(app.cars):
                 world.drawCars(app, app.cars[i], i)
+        
         app.player.drawPlayer(app)
-        #world.drawCar(app, 2)
-        drawLabel(f'Back Hops Left: {app.backCount}', app.width*.25, 50, size = 50, font = 'orbitron', 
+        
+        drawRect(50, 50, app.width//8, app.height//10, 
+                 fill = 'white', border = 'black', borderWidth = 5)
+        drawLabel('back', 50+(app.width//16), 50+app.height//20, size = 50, font = 'orbitron', 
                   bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
-            
-        drawLabel(f'Total Hops: {app.hopCount}', app.width//2, 50, size = 50, font = 'orbitron', 
-                  bold = True, fill = 'black', 
+        
+        drawRect(app.width//5, 50, app.width//6, app.height//10,
+                 fill = 'white', border = 'black', borderWidth = 5)
+        drawLabel(f'Back Hops Left: {app.backCount}', 
+                  app.width//5 + app.width//12, 50 + app.height//20, 
+                  size = 30, font = 'orbitron', bold = True, fill = 'black', 
+                  borderWidth = 2, align = 'center')
+
+        drawRect(app.width//5 + app.width//6 + app.width//20, 50, app.width//6, app.height//10,
+                 fill = 'white', border = 'black', borderWidth = 5)    
+        drawLabel(f'Total Hops: {app.hopCount}', app.width//5 + app.width//6 + app.width//20 + app.width//12, 50 + app.height//20, 
+                  size = 30, font = 'orbitron', bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
             
         drawLabel(f'Coins: {app.coinCount}', app.width*.75, 50, size = 50, font = 'orbitron', 
                   bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
         
+        #powerup/powerdown conditions
         if app.boost:
+            #add rectangles in
             drawLabel('BOOSTED! +10 Hops', app.width//2, app.height * .4, size = 50, font = 'orbitron', 
                       bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
@@ -149,12 +166,11 @@ def redrawAll(app):
 
         if app.gameOver:
             drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
-    if app.charMode:
-        util.drawBoard(app)
-
-
+            
+            """app.popUp = True"""
+    
 def onStep(app):
-    app.counter += 1 #timer
+    app.counter += 1 #consistent events timer
     
     #menu changes
     app.starAngle = (app.starAngle + app.starSpeed) % 360
@@ -164,14 +180,19 @@ def onStep(app):
         app.gameOver = False
         
 
-    if app.gameMode:    
+    if app.gameMode: 
+        
+        #player updates
         app.player.updateHop()
         app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)        
+        
+        #world updates
         world.updateCars(app)
         world.updateCollectibles(app)
-        #correctCols(app)
-        #popCollectibles(app, app.player)
+        if carCollision(app, app.player) and not app.player.isHopping:
+            app.gameOver = True
 
+        #collectible events
         if app.powerup:
             app.poweruptimer -= 1
             app.colorIndex = (app.colorIndex + 1) % len(app.powerupColors)
@@ -215,87 +236,12 @@ def onStep(app):
                     elif ball['y'] - ball['r'] <= 0:
                         ball['y'] = ball['r']
                         ball['dy'] = -1 * ball['dy']
-
-
-        if carCollision(app, app.player) and not app.player.isHopping:
-            app.gameOver = True
-        
-
-def bounceHorizontally(app):
-    app.cx += app.dx
-    if app.cx + app.r >= app.width:
-        app.cx = app.width - app.r
-        app.dx = -app.dx
-    elif app.cx - app.r <= 0:
-        app.cx = app.r
-        app.dx = -app.dx
-
-def bounceVertically(app):
-    app.cy += app.dy
-    if app.cy + app.r >= app.height:
-        app.cy = app.height - app.r
-        app.dy = -app.dy
-    elif app.cy - app.r <= 0:
-        app.cy = app.r
-        app.dy = -app.dy
-
-
-
-        
-def carCollision(app, obj):
-    for index in range(len(app.cars)):
-        cars = app.cars[index]
-        for xindex in range(len(cars)):
-            car = cars[xindex]
-            if util.collision(obj, car):
-                return True
-    return False
-
-
-def distance(x0, y0, x1, y1):
-    # Use the distance formula to find the distance
-    # from the point (x0, y0) to the point (x1, y1)
-    return ((x1 - x0)**2 + (y1 - y0)**2)**0.5
-"""
-def updateCollectibleList(app):
-    for colList in app.collectibles:
-        for xindex in range(len(colList)):
-            col = colList[xindex]
-            if col != 'no' and col.collect(app, app.player):
-                colList[xindex] = 'no'
-"""
-    
-def onMousePress(app, mouseX, mouseY):
-    if app.menuMode:
-        if util.playButton(mouseX, mouseY):
-            app.gameMode = True
-            app.menuMode = False
-            app.charMode = False
-        elif util.charButton(mouseX, mouseY):
-            app.gameMode = False
-            app.charMode = True
-            app.menuMode = False
-    
     if app.charMode:
         app.background = 'lightSkyBlue'
-
-
-def onMouseMove(app, mouseX, mouseY):
-    if app.menuMode:
-        if util.playButton(mouseX, mouseY):
-            app.playColor = 'gainsboro'
-        else:
-            app.playColor = 'gray'
-        
-        if util.charButton(mouseX, mouseY):
-            app.charColor = 'gainsboro'
-        else:
-            app.charColor = 'gray'
 
 #test on key press
 def onKeyPress(app, key):
     popCols(app)
-    
     if key == 'enter':
         if app.boost:
             for i in range(10):
@@ -337,8 +283,9 @@ def onKeyPress(app, key):
                 app.playerXIndex += 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
+        
         elif app.skip:
-            if key == 'up' or key == 'w' and doubleForwardLegal(app):
+            if (key == 'up' or key == 'w') and doubleForwardLegal(app):
                 if inWater(app, key):
                     app.gameOver = True                
                 
@@ -401,25 +348,112 @@ def onKeyPress(app, key):
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
 
+def onMousePress(app, mouseX, mouseY):
+    #menu edits
+    if app.menuMode:
+        if util.playButton(mouseX, mouseY):
+            app.gameMode = True
+            app.menuMode = False
+            app.charMode = False
+            app.background = 'lightGray'
+        elif util.charButton(mouseX, mouseY):
+            app.gameMode = False
+            app.charMode = True
+            app.menuMode = False
+    
+    if app.charMode:
+        app.background = 'lightSkyBlue'
+        row, col = util.getCurrentCell(app)
+        if row != None and col != None:
+            app.playerColor = app.charColors[row][col]
+        
+        if util.backButton(mouseX, mouseY):
+            app.charMode = False
+            app.menuMode = True
 
-def reverseWorld(app):
-    if len(app.seen) > 0:
-        lastTier = app.seen[-1]
-        app.world.insert(0, lastTier['world'])
-        app.collectibles.insert(0, lastTier['cols'])
-        app.greenery.insert(0, lastTier['plants'])
-        app.logs.insert(0, lastTier['logs'])
-        app.cars.insert(0, lastTier['cars'])
 
-        app.world.pop()
-        app.collectibles.pop()
-        app.greenery.pop()
-        app.logs.pop()
-        app.cars.pop()
-        app.seen.pop()
-    else:
-        app.gameOver = True
+def onMouseMove(app, mouseX, mouseY):
+    app.mouseX = mouseX
+    app.mouseY = mouseY
 
+    #button color edits
+    if app.menuMode:
+        if util.playButton(mouseX, mouseY):
+            app.playColor = 'gainsboro'
+        else:
+            app.playColor = 'gray'
+        
+        if util.charButton(mouseX, mouseY):
+            app.charColor = 'gainsboro'
+        else:
+            app.charColor = 'gray'
+        
+        if util.aboutButton(mouseX, mouseY):
+            app.aboutColor = 'gainsboro'
+        else:
+            app.aboutColor = 'gray'
+    
+    if app.charMode:
+        app.currRow, app.currCol = util.getCurrentCell(app)
+
+def restart(app):
+    onAppStart(app)
+
+#helper functions
+def carCollision(app, obj):
+    for index in range(len(app.cars)):
+        cars = app.cars[index]
+        for xindex in range(len(cars)):
+            car = cars[xindex]
+            if util.collision(obj, car):
+                return True
+    return False
+
+def powerUp(app): 
+    choices = ['starpower', 'skiplanes', 'rocketboost']
+    choice = py_random.choice(choices)
+    if choice == 'starpower':
+        app.powerup = True
+        app.poweruptimer = 150
+    elif choice == 'rocketboost':
+        app.boost = True
+    elif choice == 'skiplanes':
+        app.drawSkip = True
+        app.skipLabelTimer = 25
+        app.skiptimer = 150
+
+def powerDown(app):
+    choices = ['ink', 'drag']
+    choice = py_random.choice(choices)
+
+    if choice == 'drag':
+        app.drag = True
+        app.dragTimer = 150
+    elif choice == 'ink':
+        app.ink = True
+        app.inktimer = 200
+        getInk(app)
+
+def popCols(app):
+     for tier in range(len(app.collectibles)):
+        colList = app.collectibles[tier]
+        for xindex in range(len(colList)):
+            col = colList[xindex]
+            if isinstance(col, Collectible):
+                x1 = getXIndex(app, col.x)
+                x2 = getXIndex(app, app.player.x)
+                y = app.height - (tier + 2) * (app.height // len(app.world)) + 50
+                if x1 == x2 and int(abs(app.player.y - y)) < 25:
+                    if type(col) == Coin:
+                        app.coinCount += 1
+                    elif type(col) == Powerup:
+                        powerUp(app)
+                    elif type(col) == Powerdown: 
+                        powerDown(app)
+                    col.collected = True  
+                    app.collectibles[tier][xindex] = 'no'  
+
+#movement checkers
 def backwardLegal(app):
     tier = 5
     plantList = app.greenery[tier - 2]    
@@ -486,7 +520,7 @@ def forwardLegal(app):
 
 def doubleForwardLegal(app):
     tier = 5
-    plantList = app.greenery[tier + 1]    
+    plantList = app.greenery[tier + 1]
     for xindex in range(len(plantList)):
         plant = plantList[xindex]
         if plant =='bush' or plant == 'tree':
@@ -519,57 +553,7 @@ def leftLegal(app):
                 return False
     return True
 
-def getTier(app, y): 
-    tierHeight = app.height // len(app.world) 
-    yindex = int((app.height - y) // tierHeight)
-
-    return yindex
-
-def popCols(app):
-     for tier in range(len(app.collectibles)):
-        colList = app.collectibles[tier]
-        for xindex in range(len(colList)):
-            col = colList[xindex]
-            if isinstance(col, Collectible):
-                x1 = getXIndex(app, col.x)
-                x2 = getXIndex(app, app.player.x)
-                y = app.height - (tier + 1) * (app.height // len(app.world)) + 50
-                if x1 == x2 and int(abs(app.player.y - y)) < 25:
-                    if type(col) == Coin:
-                        app.coinCount += 1
-                    elif type(col) == Powerup:
-                        powerUp(app)
-                    elif type(col) == Powerdown: 
-                        powerDown(app)
-                    col.collected = True  
-                    app.collectibles[tier][xindex] = 'no'  
-
-def correctCols(app):
-    for tier in range(len(app.collectibles)):
-        colList = app.collectibles[tier]
-        for xindex in range(len(colList)):
-            col = colList[xindex]
-            if isinstance(col, Collectible):
-                x1 = getXIndex(app, col.x)
-                logY = app.height - (tier + 1) * (app.height // len(app.world)) - 25
-                colY = app.height - (tier + 1) * (app.height // len(app.world)) + 50
-                plantY = app.height - (tier + 1) * (app.height // len(app.world)) - 40
-                if x1 + 1 < len(app.logs[tier]):
-                    if app.logs[tier][x1] != 'log':
-                        app.collectibles[tier][x1] = 'no'
-                elif app.greenery[tier][x1] == 'no':
-                    app.collectibles[tier][x1] = 'no'
-    """
-    telling if a collectible is on a log
-    if (log index + 3) - collectible x index >= 0
-    if ys match
-    """
-
-def getXIndex(app, x):
-    tierWidth = app.width//15  
-    xindex = int(x//tierWidth)
-    return xindex
-
+#world updates
 def updateWorld(app):
     maxBackward = 5
     if len(app.seen) == maxBackward:
@@ -645,6 +629,25 @@ def updateWorld(app):
     app.world.append(terrain)
     app.prevTerrain = terrain
 
+def reverseWorld(app):
+    if len(app.seen) > 0:
+        lastTier = app.seen[-1]
+        app.world.insert(0, lastTier['world'])
+        app.collectibles.insert(0, lastTier['cols'])
+        app.greenery.insert(0, lastTier['plants'])
+        app.logs.insert(0, lastTier['logs'])
+        app.cars.insert(0, lastTier['cars'])
+
+        app.world.pop()
+        app.collectibles.pop()
+        app.greenery.pop()
+        app.logs.pop()
+        app.cars.pop()
+        app.seen.pop()
+    else:
+        app.gameOver = True
+
+#getters
 def getLogs(app):
     logs = ['no' for xindex in range(15)]
     totalLogs = py_random.randint(1, 3)
@@ -713,6 +716,16 @@ def getInk(app):
         
         app.balls.append(ball)
         
+def getXIndex(app, x):
+    tierWidth = app.width//15  
+    xindex = int(x//tierWidth)
+    return xindex
+
+def getTier(app, y): 
+    tierHeight = app.height // len(app.world) 
+    yindex = int((app.height - y) // tierHeight)
+
+    return yindex
 
 def main():
     runApp()

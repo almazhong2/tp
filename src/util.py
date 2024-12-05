@@ -3,6 +3,7 @@ import math
 import random as py_random
 
 #3D projection (~2.5D): from CMU CS Academy 3D graphics video
+#https://youtu.be/ledW6-k0BLY?feature=shared 
 app.x, app.y, app.z = 0.25, 2, 3
 
 app.verticalView = -30
@@ -82,7 +83,7 @@ def drawBlock3D(length, width, height, color):
 def drawMenu(app):
     drawImage('src/krossykartlogo.png', app.width//2, app.height//3, align = 'center')
 
-#15112 Homework Fancy Wheel Inspired
+#Inspired by CMU CS Academy: 6.3.6 Fancy Wheel 1
 #star variables
 app.starAngle = 90
 app.starRadius = app.height*0.8 - 50
@@ -101,13 +102,10 @@ def drawStars(app):
     x, y = getRadiusEndpoint(app.starX, app.starY, app.starRadius, app.starAngle)
     drawImage('src/star.png', x - app.starWidth // 2, y - app.starHeight//2, width = app.starWidth, height = app.starHeight)
 
-#print(getImageSize('src/star.png'))
-
 app.playLeft = app.width/3.2 + 100
 app.playTop = app.height*0.5
 app.playWidth = app.width//4
 app.playHeight = app.height*0.1
-
 
 def drawButtons(app):
     #play button
@@ -124,52 +122,13 @@ def drawButtons(app):
     drawLabel('Characters', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.625 + (app.height*.1)//2, 
               size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
     
-    #how to button
+    #about button
     drawRect(app.width/3.2 + 100, app.height*0.75, 
-             app.width//4, app.height*.1, 
-             fill = 'gray', border = 'black')
-    drawLabel('How to Play', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.75 + (app.height*.1)//2, 
+             app.width//4, app.height*0.1, 
+             fill = app.aboutColor, border = 'black')
+    drawLabel('About', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.75 + (app.height*.1)//2, 
               size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
 
-#characterselection
-#drawingBoard from CMU CS academy Creative Task: Tetris
-charColors = [['crimson', 'orange', 'darkCyan'], 
-              ['mediumSlateBlue', 'violet', 'saddleBrown'], 
-              ['aliceBlue', 'mintCream', 'mistyRose']]
-
-app.cellBorderWidth = 1
-def drawBoard(app):
-    for row in range(3):
-        for col in range(3):
-            drawCell(app, row, col, charColors[row][col])
-
-#draws a rectangular cell utilizing cell coordinate and size
-def drawCell(app, row, col, color):
-    cellLeft, cellTop = getCellLeftTop(app, row, col)
-    cellWidth, cellHeight = getCellSize(app)
-    drawRect(cellLeft, cellTop, cellWidth, cellHeight,
-             fill= color, border='black',
-             borderWidth=app.cellBorderWidth)
-
-#cell helper to get top-left coordinate
-def getCellLeftTop(app, row, col):
-    cellWidth, cellHeight = getCellSize(app)
-    cellLeft = app.width//5 + col * cellWidth
-    cellTop = app.height//5 + row * cellHeight
-    return (cellLeft, cellTop)
-
-#size of the cells
-def getCellSize(app):
-    cellWidth = 500 / 3
-    cellHeight = 500 / 3
-    return (cellWidth, cellHeight)
-
-#final border for board
-def drawBoardBorder(app):
-  # draw the board outline (with double-thickness):
-  drawRect(app.boardLeft, app.boardTop, app.boardWidth, app.boardHeight,
-           fill=None, border='black',
-           borderWidth=2*app.cellBorderWidth)
 
 #CS academy intersection conditions (4.3.5)    
 def playButton(mouseX, mouseY):
@@ -186,7 +145,83 @@ def charButton(mouseX, mouseY):
         return True
     return False
 
+def aboutButton(mouseX, mouseY):
+    right = app.width/3.2 + 100 + app.width//4
+    bottom = app.height*0.75 + app.height*0.1
+    if (app.width/3.2 + 100 <= mouseX <= right) and (app.height*0.75 <= mouseY <= bottom):
+        return True
+    return False
 
+def backButton(mouseX, mouseY):
+    right = 50 + app.width//8
+    bottom = 50 + app.height//10
+    if (50 <= mouseX <= right) and (50 <= mouseY <= bottom):
+        return True
+    return False
+
+#characterselection
+#All drawBoard functions from CMU CS Academy 7.3.7 Creative Task: Tetris
+app.charColors = [['violet', 'dodgerBlue', 'hotPink'], 
+              ['darkGray', 'darkSlateBlue', 'lime']]
+
+hoverColors = [['plum', 'deepSkyBlue', 'lightPink'], 
+               ['lightGray', 'slateBlue', 'chartreuse']]
+
+app.cellBorderWidth = 2
+
+def drawBoard(app):
+    for row in range(2):
+        for col in range(3):
+            if app.currRow == row and app.currCol == col:
+                color = hoverColors[row][col]
+            else:
+                color = app.charColors[row][col]
+            drawCell(app, row, col, color)
+    drawBoardBorder(app)
+
+#draws a rectangular cell utilizing cell coordinate and size
+def drawCell(app, row, col, color):
+    cellLeft, cellTop = getCellLeftTop(app, row, col)
+    cellWidth, cellHeight = getCellSize(app)
+    drawRect(cellLeft, cellTop, cellWidth, cellHeight,
+             fill= color, border='black',
+             borderWidth=app.cellBorderWidth)
+
+#cell helper to get top-left coordinate
+def getCellLeftTop(app, row, col):
+    cellWidth, cellHeight = getCellSize(app)
+    cellLeft = app.width//5 + col * cellWidth
+    cellTop = app.height//3 + row * cellHeight
+    return (cellLeft, cellTop)
+
+#size of the cells
+def getCellSize(app):
+    cellWidth = app.width//5 / 3
+    cellHeight = app.height//5 / 2
+    return (cellWidth, cellHeight)
+
+#final border for board
+def drawBoardBorder(app):
+  # draw the board outline (with double-thickness):
+  drawRect(app.width//5, app.height//3, 3*getCellSize(app)[0], 2*getCellSize(app)[1],
+           fill=None, border='black',
+           borderWidth=2*app.cellBorderWidth)
+
+#gets cell mouse is hovering over
+def getCurrentCell(app):
+    for row in range(2):
+        for col in range(3):
+            cellLeft, cellTop = getCellLeftTop(app, row, col)
+            cellWidth, cellHeight = getCellSize(app)
+
+            #if within cell
+            if (cellLeft <= app.mouseX <= cellLeft + cellWidth) and (cellTop <= app.mouseY <= cellTop + cellHeight):
+                return row, col
+    
+    return None, None
+        
+
+#get vertices for drawing block
 def getVertices(x, y, width, height, depth):
     w, h = width//2, height//2
     
@@ -234,19 +269,7 @@ def getBoundaries(vertices):
 
     return left, right, top, bottom
 
-def collision(obj1, obj2):
-    left1, right1, top1, bottom1 = getBoundaries(getVertices(obj1.x, obj1.y, obj1.width, obj1.height, obj1.depth))
-    left2, right2, top2, bottom2 = getBoundaries(getVertices(obj2.x, obj2.y, obj2.width, obj2.height, obj2.depth))
-    
-    #CMU CS Academy 4.3.5 rectangle-rectangle intersection
-    c1 = right2 >= left1 and right1 >= left2 #x intersect
-    c2 = bottom2 >= top1 and bottom1 >= top2 #y intersect
-
-
-    return c1 and c2
-
-
-#new way: draw 3 polygons using depth perception
+#draw 3 polygons using depth perception
 def drawBlock(x, y, width, height, depth, color):
     vertices = getVertices(x, y, width, height, depth)
 
@@ -263,7 +286,6 @@ def drawBlock(x, y, width, height, depth, color):
             vx, vy = vertices[index]
             points.extend([vx, vy]) #in format for polygon
         drawPolygon(*points, fill = color)
-
 
 def drawBorderBlock(x, y, width, height, depth, color):
     vertices = getVertices(x, y, width, height, depth)
@@ -282,30 +304,16 @@ def drawBorderBlock(x, y, width, height, depth, color):
             points.extend([vx, vy]) #in format for polygon
         drawPolygon(*points, fill = color, border = 'black')
 
-def powerUp(app, powerup): 
-    print('starpower triggered!')
-    choices = ['starpower']
-    choice = py_random.choice(choices)
-    if powerup.collected:
-        colors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
-        color = py_random.choice(colors)
-        app.playerColor = color 
-        
-
-
-"""
-if choice == 'starpower':
-        
-"""
+#check if 2 objects collide
+def collision(obj1, obj2):
+    left1, right1, top1, bottom1 = getBoundaries(getVertices(obj1.x, obj1.y, obj1.width, obj1.height, obj1.depth))
+    left2, right2, top2, bottom2 = getBoundaries(getVertices(obj2.x, obj2.y, obj2.width, obj2.height, obj2.depth))
     
+    #CMU CS Academy 4.3.5 rectangle-rectangle intersection (with some leeway for moving objects)
+    c1 = right2 - 5 > left1 and right1 - 5 > left2 #x intersect
+    c2 = bottom2 - 5 > top1 and bottom1 - 5 > top2 #y intersect
 
 
+    return c1 and c2
 
-def powerDown(app):
-    pass
-"""
-    Label(value, centerX, centerY, size=12, font='arial', bold=False,
-      italic=False, fill='black', border=None, borderWidth=2, opacity=100,
-      rotateAngle=0, align='center', visible=True)
-"""
 

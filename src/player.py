@@ -1,9 +1,6 @@
 from cmu_graphics import *
 import util
 
-app.playerColor = 'violet'
-app.depth = 25
-app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
 
 """
 def drawPlayer(app):
@@ -23,12 +20,13 @@ def snapTerrainX(app, j):
 
 class Player:
 
-    def __init__(self, x, y, hopHeight, frames):
+    def __init__(self, x, y, hopHeight, frames, width, height, depth):
         self.x = x
         self.y = y
         
-        self.width = 75
-        self.height = 50
+        self.width = width
+        self.height = height
+        self.depth = depth
 
         #hopping coordinates start off stationary
         self.x1 = x
@@ -54,33 +52,18 @@ class Player:
         elif tier >= len(app.world):
             tier = len(app.world) - 1
     
-
     def hop(self):
         if self.isHopping == False:
-            
-            """
-            self.x1 = self.x
-            self.y1 = self.y
-
-            self.x2 = x2
-            self.y2 = y2
-            """
-
             self.currentFrame = 0
             self.isHopping = True
 
     def updateHop(self):
         if self.isHopping:
             time = self.currentFrame / self.totalFrames
+            #chatGPT: formula for frame by frame hopping (in a parabolic motion)
             self.y = self.y = (1-time)*self.y1 + time*self.y2
             self.y += 4*self.hopHeight*(time - 0.5)**2
 
-            """
-            #chatGPT: formulas for frame by frame hopping (in a parabolic motion)
-            self.x = (1-time)*self.x1 + time*self.x2 
-            self.y = (1-time)*self.y1 + time*self.y2
-            self.y -= 4*self.hopHeight*(time - 0.5)**2
-            """
             self.currentFrame +=1
 
             if self.currentFrame >= self.totalFrames:
@@ -92,9 +75,7 @@ class Player:
         y = snapTerrainY(app, i)
         return x, y
 
-    
     def drawPlayer(self, app):
-        util.drawBorderBlock(self.x, self.y, 75, 50, app.depth, app.playerColor)
+        util.drawBorderBlock(self.x, self.y, self.width, self.height, self.depth, app.playerColor)
 
-    #app.hopX1, app.hopY1, app.hopX2, app.hopY2 = player.getHoppingVariables(app.playerX, app.playerY)
 

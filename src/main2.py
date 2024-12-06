@@ -8,17 +8,19 @@ from Collectible import *
 
 #big game functions
 def onAppStart(app):
+
     #menu starters
     app.background = gradient('gray', 'gainsboro', start = 'top')
     app.width = 1600
     app.height = 1050
     
     #modes
-    app.gameMode = True
+    app.gameMode = False
     app.charMode = False
-    app.menuMode = False
+    app.menuMode = True
     app.gameOver = False
     app.popUp = False
+    app.state = 'game over!'
 
     #button colors
     app.playColor = 'gray'
@@ -51,16 +53,22 @@ def onAppStart(app):
     #game counts
     app.hopCount = 0
     app.coinCount = 0
+    app.totalCoins = 0
     app.backCount = 5 
+    app.powerupCount = 0
+    app.highScore = 0
+    app.powerdownCount = 0 
 
     #powerup/powerdown functions
     #starpower
     app.playerColor = 'violet'
+    app.selectedColor = 'violet'
     app.powerup = False
     app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
     app.colorIndex = 0
     app.poweruptimer = 150
     app.paused = False
+    app.popup = False
 
     #skiplanes
     app.skip = False
@@ -81,6 +89,16 @@ def onAppStart(app):
     app.currRow = None
     app.currCol = None
     app.charColor = app.playerColor
+
+    #sounds
+    app.hopSound = Sound('sounds/hop.mp3')
+    app.whoosh = Sound('sounds/car.mp3')
+    app.powerUpSound = Sound('sounds/skip.mp3')
+    app.splash = Sound('sounds/splash.mp3')
+    app.starSound = Sound('sounds/starpower.mp3')
+    app.playStar = True
+    app.fail = Sound('sounds/fail.mp3')
+    app.inkSound = Sound('sounds/splat.mp3')
 
 def redrawAll(app):
     if app.menuMode:
@@ -116,32 +134,40 @@ def redrawAll(app):
         
         app.player.drawPlayer(app)
         
-        drawRect(50, 50, app.width//8, app.height//10, 
-                 fill = 'white', border = 'black', borderWidth = 5)
-        drawLabel('back', 50+(app.width//16), 50+app.height//20, size = 50, font = 'orbitron', 
-                  bold = True, fill = 'black', 
-                  borderWidth = 2, align = 'center')
-        
-        drawRect(app.width//5, 50, app.width//6, app.height//10,
-                 fill = 'white', border = 'black', borderWidth = 5)
-        drawLabel(f'Back Hops Left: {app.backCount}', 
-                  app.width//5 + app.width//12, 50 + app.height//20, 
-                  size = 30, font = 'orbitron', bold = True, fill = 'black', 
-                  borderWidth = 2, align = 'center')
-
-        drawRect(app.width//5 + app.width//6 + app.width//20, 50, app.width//6, app.height//10,
-                 fill = 'white', border = 'black', borderWidth = 5)    
-        drawLabel(f'Total Hops: {app.hopCount}', app.width//5 + app.width//6 + app.width//20 + app.width//12, 50 + app.height//20, 
-                  size = 30, font = 'orbitron', bold = True, fill = 'black', 
-                  borderWidth = 2, align = 'center')
+        if not app.gameOver and not app.paused:
+            drawRect(50, 50, app.width//8, app.height//10, 
+                    fill = 'white', border = 'black', borderWidth = 5)
+            drawLabel('pause', 50+(app.width//16), 50+app.height//20, size = 50, font = 'orbitron', 
+                    bold = True, fill = 'black', 
+                    borderWidth = 2, align = 'center')
             
-        drawLabel(f'Coins: {app.coinCount}', app.width*.75, 50, size = 50, font = 'orbitron', 
-                  bold = True, fill = 'black', 
-                  borderWidth = 2, align = 'center')
+            drawRect(app.width//5, 50, app.width//6, app.height//10,
+                    fill = 'white', border = 'black', borderWidth = 5)
+            drawLabel(f'Back Hops Left: {app.backCount}', 
+                    app.width//5 + app.width//12, 50 + app.height//20, 
+                    size = 30, font = 'orbitron', bold = True, fill = 'black', 
+                    borderWidth = 2, align = 'center')
+
+            drawRect(app.width//5 + app.width//6 + app.width//20, 50, app.width//6, app.height//10,
+                    fill = 'white', border = 'black', borderWidth = 5)    
+            drawLabel(f'Total Hops: {app.hopCount}', app.width//5 + app.width//6 + app.width//20 + app.width//12, 50 + app.height//20, 
+                    size = 30, font = 'orbitron', bold = True, fill = 'black', 
+                    borderWidth = 2, align = 'center')
+
+            drawRect(app.width - 50, 50, app.width//8, app.height//10, 
+                    fill = 'white', border = 'black', borderWidth = 5, align = 'right-top')    
+            drawLabel(f'Coins: {app.coinCount}', app.width - 50 - app.width//8 + app.width//16, 50 + app.height//20, 
+                    size = 50, font = 'orbitron', bold = True, fill = 'black', 
+                    borderWidth = 2, align = 'center')
+        
+        elif app.paused and app.popup:
+            util.popup(app)
         
         #powerup/powerdown conditions
         if app.boost:
             #add rectangles in
+            drawRect(app.width//2, app.height * .4, app.width//3, app.height//3, 
+                     fill = 'white', border = 'black', borderWidth = 3, align = 'center')
             drawLabel('BOOSTED! +10 Hops', app.width//2, app.height * .4, size = 50, font = 'orbitron', 
                       bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
@@ -149,6 +175,8 @@ def redrawAll(app):
                       fill = 'black', align = 'center')
         
         if app.drag:
+            drawRect(app.width//2, app.height * .4, app.width//3, app.height//3, 
+                     fill = 'white', border = 'black', borderWidth = 3, align = 'center')
             drawLabel('DRAGGED! -10 Hops', app.width//2, app.height * .4, size =50, font = 'orbitron', 
                       bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
@@ -157,7 +185,9 @@ def redrawAll(app):
 
         
         if app.drawSkip:
-            drawLabel('Skip Lanes!!', app.width//2, app.height //2, size  =50, font = 'orbitron', 
+            drawRect(app.width//2, app.height//2, app.width//5, app.height//10, 
+                     fill = 'white', border = 'black', borderWidth = 3, align = 'center')
+            drawLabel('Skip Lanes!!', app.width//2, app.height//2, size  =50, font = 'orbitron', 
                       bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
         
@@ -165,23 +195,25 @@ def redrawAll(app):
             world.drawInk(app)
 
         if app.gameOver:
-            drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
-            
+            #drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
+            util.popup(app)
+
             """app.popUp = True"""
     
 def onStep(app):
     app.counter += 1 #consistent events timer
-    
-    #menu changes
-    app.starAngle = (app.starAngle + app.starSpeed) % 360
-    
-    #test timer
-    if app.counter%app.stepsPerSecond * 3 == 0:
-        app.gameOver = False
-        
 
+    if app.paused and app.gameMode:
+        app.state = 'resume'
+    #menu changes
+    if app.menuMode:
+        app.starAngle = (app.starAngle + app.starSpeed) % 360
+        app.background = 'gainsboro'
+    
+    if app.charMode:
+        app.background = 'lightSkyBlue'
+    
     if app.gameMode: 
-        
         #player updates
         app.player.updateHop()
         app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)        
@@ -189,31 +221,36 @@ def onStep(app):
         #world updates
         world.updateCars(app)
         world.updateCollectibles(app)
-        if carCollision(app, app.player) and not app.player.isHopping:
+        
+        if carCollision(app, app.player) and not app.player.isHopping and not app.powerup and not app.gameOver:
+            app.whoosh.play()
             app.gameOver = True
-
+        
         #collectible events
         if app.powerup:
+            app.skip = False
+            app.boost = False
+            app.ink = False
+            app.drag = False
+            
             app.poweruptimer -= 1
             app.colorIndex = (app.colorIndex + 1) % len(app.powerupColors)
             app.playerColor = app.powerupColors[app.colorIndex]
+            if app.playStar:
+                app.starSound.play()
+                app.playStar = False
+            
             if app.poweruptimer <= 0:
-                app.playerColor = 'violet'
+                app.starSound.pause()
+                app.playerColor = app.selectedColor
                 app.powerup = False
         
-        if app.drawSkip:
-            app.skipLabelTimer -= 1
-
-            if app.skipLabelTimer <= 0:
-                app.skip = True
-                app.drawSkip = False
-        
-        if app.skip:
-            app.skiptimer -= 1
-            if app.skiptimer <= 0:
-                app.skip = False
-        
         if app.ink:
+            app.powerup = False
+            app.skip = False
+            app.boost = False
+            app.drag = False
+
             app.inktimer -= 1
             if app.inktimer <= 0:
                 app.ink = False
@@ -236,31 +273,77 @@ def onStep(app):
                     elif ball['y'] - ball['r'] <= 0:
                         ball['y'] = ball['r']
                         ball['dy'] = -1 * ball['dy']
-    if app.charMode:
-        app.background = 'lightSkyBlue'
+                        
+        if app.drawSkip:
+            app.powerup = False
+            app.boost = False
+            app.ink = False
+            app.drag = False
+            app.paused = True
+
+            app.skipLabelTimer -= 1
+            print(f'{app.skipLabelTimer}')
+
+            if app.skipLabelTimer <= 0:
+                app.skip = True
+                app.drawSkip = False
+        
+        if app.boost:
+            app.powerup = False
+            app.ink = False
+            app.drag = False
+            app.skip = False
+
+            app.paused = True
+        
+        if app.drag:
+            app.powerup = False
+            app.ink = False
+            app.boost = False
+            app.skip = False
+
+            app.paused = True
+
+        if app.skip:
+            app.paused = False
+            app.skiptimer -= 1
+            if app.skiptimer <= 0:
+                app.skip = False
+
+    if app.gameOver:
+        app.state = 'game over!'
+        app.paused = True
+        if app.hopCount > app.highScore:
+            app.highScore = app.hopCount
+
+
+          
 
 #test on key press
 def onKeyPress(app, key):
     popCols(app)
-    if key == 'enter':
-        if app.boost:
+    if app.boost:
+        if key == 'enter':
             for i in range(10):
                 updateWorld(app)
             while app.world[4] != 'grass':
                 updateWorld(app)
-            app.boost = False
             app.hopCount += 10 
-        elif app.drag:
+            app.boost = False
+            app.paused = False
+    elif app.drag:
+        if key == 'enter':
             for i in range(10):
                 updateWorld(app)
-            while app.world[4] != 'grass':
-                updateWorld(app)
-            app.drag = False
+                while app.world[4] != 'grass':
+                    updateWorld(app)
             app.hopCount -= 10
-        
-    if app.gameMode:
+            app.drag = False
+            app.paused = False
+    elif app.gameMode and not app.paused:  
         if app.powerup:
             if (key == 'up' or key == 'w'):
+                app.hopSound.play()
                 app.player.hop()
                 updateWorld(app)
                 app.hopCount += 1
@@ -274,21 +357,21 @@ def onKeyPress(app, key):
                     app.backCount = 0
                 app.hopCount -= 1
 
-            elif (key == 'left' or key == 'a'):
+            elif (key == 'left' or key == 'a') and app.player.x > 0:
                 app.playerXIndex -= 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
             
-            elif (key == 'right' or key == 'd'):
+            elif (key == 'right' or key == 'd') and app.player.x < app.width:
                 app.playerXIndex += 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
         
         elif app.skip:
             if (key == 'up' or key == 'w') and doubleForwardLegal(app):
+                app.hopSound.play()
                 if inWater(app, key):
                     app.gameOver = True                
-                
                 app.player.hop()
                 updateWorld(app)
                 updateWorld(app)
@@ -303,14 +386,14 @@ def onKeyPress(app, key):
                     app.backCount = 0
                 app.hopCount -= 1
 
-            elif (key == 'left' or key == 'a') and leftLegal(app):
+            elif (key == 'left' or key == 'a') and leftLegal(app) and app.player.x > 0:
                 if inWater(app, key):
                     app.gameOver = True
                 app.playerXIndex -= 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
             
-            elif (key == 'right' or key == 'd') and rightLegal(app):
+            elif (key == 'right' or key == 'd') and rightLegal(app) and app.player.x < app.width:
                 if inWater(app, key):
                     app.gameOver = True
                 app.playerXIndex += 1
@@ -318,9 +401,9 @@ def onKeyPress(app, key):
                 app.player.x = newX
         else:
             if (key == 'up' or key == 'w') and forwardLegal(app):
+                app.hopSound.play()
                 if inWater(app, key):
                     app.gameOver = True                
-                
                 app.player.hop()
                 updateWorld(app)
                 app.hopCount += 1
@@ -334,19 +417,20 @@ def onKeyPress(app, key):
                     app.backCount = 0
                 app.hopCount -= 1
 
-            elif (key == 'left' or key == 'a') and leftLegal(app):
+            elif (key == 'left' or key == 'a') and leftLegal(app) and app.player.x > 0:
                 if inWater(app, key):
                     app.gameOver = True
                 app.playerXIndex -= 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX
             
-            elif (key == 'right' or key == 'd') and rightLegal(app):
+            elif (key == 'right' or key == 'd') and rightLegal(app) and app.player.x < app.width:
                 if inWater(app, key):
                     app.gameOver = True
                 app.playerXIndex += 1
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
-                app.player.x = newX
+                app.player.x = newX      
+            
 
 def onMousePress(app, mouseX, mouseY):
     #menu edits
@@ -366,11 +450,23 @@ def onMousePress(app, mouseX, mouseY):
         row, col = util.getCurrentCell(app)
         if row != None and col != None:
             app.playerColor = app.charColors[row][col]
+            app.selectedColor = app.charColors[row][col]
         
         if util.backButton(mouseX, mouseY):
             app.charMode = False
             app.menuMode = True
+    
+    if app.gameMode:
+        if util.backButton(mouseX, mouseY):
+            app.popup = True
+            app.paused = True
 
+        if app.paused:
+            if not app.gameOver and util.unpauseButton(mouseX, mouseY):
+                app.popup = False
+                app.paused = False
+            elif util.restartButton(mouseX, mouseY):
+                restart(app)
 
 def onMouseMove(app, mouseX, mouseY):
     app.mouseX = mouseX
@@ -399,6 +495,7 @@ def onMouseMove(app, mouseX, mouseY):
 def restart(app):
     onAppStart(app)
 
+
 #helper functions
 def carCollision(app, obj):
     for index in range(len(app.cars)):
@@ -410,26 +507,31 @@ def carCollision(app, obj):
     return False
 
 def powerUp(app): 
-    choices = ['starpower', 'skiplanes', 'rocketboost']
+    choices = ['starpower','skiplanes','rocketboost']
     choice = py_random.choice(choices)
     if choice == 'starpower':
+        app.playStar = True
         app.powerup = True
-        app.poweruptimer = 150
+        app.poweruptimer = 300
     elif choice == 'rocketboost':
+        app.powerUpSound.play()
         app.boost = True
     elif choice == 'skiplanes':
+        app.powerUpSound.play()
         app.drawSkip = True
         app.skipLabelTimer = 25
         app.skiptimer = 150
 
 def powerDown(app):
-    choices = ['ink', 'drag']
+    choices = ['drag', 'ink']
     choice = py_random.choice(choices)
 
     if choice == 'drag':
+        app.fail.play()
         app.drag = True
         app.dragTimer = 150
     elif choice == 'ink':
+        app.inkSound.play()
         app.ink = True
         app.inktimer = 200
         getInk(app)
@@ -448,8 +550,10 @@ def popCols(app):
                         app.coinCount += 1
                     elif type(col) == Powerup:
                         powerUp(app)
+                        app.powerupCount += 1
                     elif type(col) == Powerdown: 
                         powerDown(app)
+                        app.powerdownCount += 1
                     col.collected = True  
                     app.collectibles[tier][xindex] = 'no'  
 
@@ -478,8 +582,8 @@ def inWater(app, key):
             if index < len(logList):
                 log = logList[index]
                 if log == 'no' and logList[index + 1] == 'no' and logList[index - 1] == 'no':
-                    return True      
-        return False
+                    app.splash.play()
+                    return True  
     elif key in ['right', 'd']:
         tier = 3
         if app.world[tier + 1] == 'lake':
@@ -491,6 +595,7 @@ def inWater(app, key):
                     if index + 1 < len(logList) and logList[index + 1] == 'log':
                         return False
                     elif logList[index - 1] == 'no':
+                        app.splash.play()
                         return True
                 
     elif key in ['left', 'a']:
@@ -504,6 +609,7 @@ def inWater(app, key):
                     if logList[index - 2] == 'log':
                         return False
                     elif logList[index - 1] == 'no':
+                        app.splash.play()
                         return True
     return False
 

@@ -159,6 +159,45 @@ def backButton(mouseX, mouseY):
         return True
     return False
 
+
+def restartButton(mouseX, mouseY):
+    index = 5
+    rectHeight = app.height*0.6
+
+    x = app.width//2
+    y = app.height//2 - rectHeight//2 + index*rectHeight//6 + 50
+    
+    buttonWidth = app.width //6
+    buttonHeight = rectHeight//6 - 50
+
+    left = x - buttonWidth//2
+    right = x + buttonWidth//2
+    top = y - buttonHeight//2
+    bottom = y + buttonHeight//2
+
+    if (left <= mouseX <= right) and (top <= mouseY <= bottom):
+        return True
+    return False
+
+def unpauseButton(mouseX, mouseY):
+    index = 0
+    rectHeight = app.height*0.6
+
+    x = app.width//2
+    y = app.height//2 - rectHeight//2 + index*rectHeight//6 + 50
+    
+    buttonWidth = app.width //6
+    buttonHeight = rectHeight//6 - 50
+
+    left = x - buttonWidth//2
+    right = x + buttonWidth//2
+    top = y - buttonHeight//2
+    bottom = y + buttonHeight//2
+
+    if (left <= mouseX <= right) and (top <= mouseY <= bottom):
+        return True
+    return False
+
 #characterselection
 #All drawBoard functions from CMU CS Academy 7.3.7 Creative Task: Tetris
 app.charColors = [['violet', 'dodgerBlue', 'hotPink'], 
@@ -220,6 +259,7 @@ def getCurrentCell(app):
     
     return None, None
         
+
 
 #get vertices for drawing block
 def getVertices(x, y, width, height, depth):
@@ -303,6 +343,25 @@ def drawBorderBlock(x, y, width, height, depth, color):
             vx, vy = vertices[index]
             points.extend([vx, vy]) #in format for polygon
         drawPolygon(*points, fill = color, border = 'black')
+
+def popup(app):
+    rectHeight = app.height*0.6
+    rectWidth = app.width//3
+    drawRect(app.width//2, app.height//2, app.width//3, rectHeight, 
+             fill = 'lightSkyBlue', border = 'black', borderWidth = 10, align = 'center')
+    
+    labels = [f'{app.state}', f'score: {app.hopCount}', f'coins collected: {app.coinCount}', 
+              f'powerups: {app.powerupCount}', f'powerdowns: {app.powerdownCount}',
+              f'highscore: {app.highScore}', 'restart']
+
+    for index in range(len(labels)):
+        label = labels[index]
+        x, y = app.width//2, app.height//2 - rectHeight//2 + index*rectHeight//(len(labels)) + 50
+        drawRect(x, y, app.width//6, rectHeight//(len(labels)) -50, fill = 'white', 
+                 borderWidth = 3, border = 'black', align = 'center')
+        drawLabel(label, x, y, size = 30, font = 'orbitron',
+                  bold = True, fill = 'black',
+                  borderWidth = 2, align = 'center')
 
 #check if 2 objects collide
 def collision(obj1, obj2):

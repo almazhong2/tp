@@ -29,7 +29,8 @@ def onAppStart(app):
     app.aboutColor = 'gray'
 
     #world lists
-    app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
+    app.world = ['grass', 'road', 'road', 'grass', 'grass', 
+                 'road', 'grass', 'grass', 'road', 'grass', 'road']
     app.seen = []
 
     #terrain generation
@@ -49,7 +50,8 @@ def onAppStart(app):
     app.playerXIndex = 7
     startX, startY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
     app.player = Player(startX, startY, 50, app.stepsPerSecond//5, 75, 50, 25)
-    app.charPlayer = Player(app.width*4/5, app.height*0.7, 20, app.stepsPerSecond//5, 450, 300, 150)
+    app.charPlayer = Player(app.width*4/5, app.height*0.7, 20, 
+                            app.stepsPerSecond//5, 450, 300, 150)
     
     #game counts
     app.hopCount = 0
@@ -66,7 +68,8 @@ def onAppStart(app):
     app.characterColor = app.playerColor
     app.selectedColor = 'violet'
     app.powerup = False
-    app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
+    app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 
+                         'paleGreen', 'lightCyan', 'mediumPurple']
     app.colorIndex = 0
     app.poweruptimer = 150
     app.paused = False
@@ -92,13 +95,27 @@ def onAppStart(app):
     app.currCol = None
 
     #sounds
+
+    #https://pixabay.com/sound-effects/swing-whoosh-110410/ 
     app.hopSound = Sound('sounds/hop.mp3')
+
+    #https://pixabay.com/sound-effects/car-pass-by-9111/  
     app.whoosh = Sound('sounds/car.mp3')
+
+    #https://www.myinstants.com/en/instant/mario-power-up/  
     app.powerUpSound = Sound('sounds/skip.mp3')
+
+    #https://pixabay.com/sound-effects/water-splash-199583/  
     app.splash = Sound('sounds/splash.mp3')
+
+    #https://www.myinstants.com/en/instant/mario-star-power/  
     app.starSound = Sound('sounds/starpower.mp3')
     app.playStar = True
+    
+    #https://pixabay.com/sound-effects/wah-103118/ 
     app.fail = Sound('sounds/fail.mp3')
+
+    #https://pixabay.com/sound-effects/slime-splat-1-219248/ 
     app.inkSound = Sound('sounds/splat.mp3')
 
 def redrawAll(app):
@@ -114,16 +131,16 @@ def redrawAll(app):
         #back button
         drawRect(50, 50, app.width//8, app.height//10, 
                  fill = 'white', border = 'black', borderWidth = 5)
-        drawLabel('back', 50+(app.width//16), 50+app.height//20, size = 50, font = 'orbitron', 
-                  bold = True, fill = 'black', 
+        drawLabel('back', 50+(app.width//16), 50+app.height//20, 
+                  size = 50, font = 'orbitron', bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
         
         #label
         drawRect(app.width*.6, 200, app.width//4, app.height//5, 
                  fill = 'white', border = 'black', borderWidth = 5)
-        drawLabel('choose a color!', app.width*.6 +(app.width//8), 200 + app.height//10, size = 50, font = 'orbitron', 
-                  bold = True, fill = 'black', 
-                  borderWidth = 2, align = 'center')
+        drawLabel('choose a color!', app.width*.6 +(app.width//8), 
+                  200 + app.height//10, size = 50, font = 'orbitron', 
+                  bold = True, fill = 'black', borderWidth = 2, align = 'center')
         
     if app.aboutMode:
         util.popup(app)
@@ -140,9 +157,9 @@ def redrawAll(app):
         if not app.gameOver and not app.paused:
             drawRect(50, 50, app.width//8, app.height//10, 
                     fill = 'white', border = 'black', borderWidth = 5)
-            drawLabel('pause', 50+(app.width//16), 50+app.height//20, size = 50, font = 'orbitron', 
-                    bold = True, fill = 'black', 
-                    borderWidth = 2, align = 'center')
+            drawLabel('pause', 50+(app.width//16), 50+app.height//20, 
+                      size = 50, font = 'orbitron', bold = True, fill = 'black', 
+                      borderWidth = 2, align = 'center')
             
             drawRect(app.width//5, 50, app.width//6, app.height//10,
                     fill = 'white', border = 'black', borderWidth = 5)
@@ -153,15 +170,15 @@ def redrawAll(app):
 
             drawRect(app.width//5 + app.width//6 + app.width//20, 50, app.width//6, app.height//10,
                     fill = 'white', border = 'black', borderWidth = 5)    
-            drawLabel(f'Total Hops: {app.hopCount}', app.width//5 + app.width//6 + app.width//20 + app.width//12, 50 + app.height//20, 
-                    size = 30, font = 'orbitron', bold = True, fill = 'black', 
-                    borderWidth = 2, align = 'center')
+            drawLabel(f'Total Hops: {app.hopCount}', app.width//5 + app.width//6 + app.width//20 + app.width//12, 
+                      50 + app.height//20, size = 30, font = 'orbitron', bold = True, fill = 'black', 
+                      borderWidth = 2, align = 'center')
 
             drawRect(app.width - 50, 50, app.width//8, app.height//10, 
                     fill = 'white', border = 'black', borderWidth = 5, align = 'right-top')    
-            drawLabel(f'Coins: {app.coinCount}', app.width - 50 - app.width//8 + app.width//16, 50 + app.height//20, 
-                    size = 50, font = 'orbitron', bold = True, fill = 'black', 
-                    borderWidth = 2, align = 'center')
+            drawLabel(f'Coins: {app.coinCount}', app.width - 50 - app.width//8 + app.width//16,
+                      50 + app.height//20,  size = 50, font = 'orbitron', bold = True, fill = 'black', 
+                      borderWidth = 2, align = 'center')
         
         elif app.paused and app.popup:
             util.popup(app)
@@ -171,8 +188,8 @@ def redrawAll(app):
             #add rectangles in
             drawRect(app.width//2, app.height * .4, app.width//3, app.height//3, 
                      fill = 'white', border = 'black', borderWidth = 3, align = 'center')
-            drawLabel('BOOSTED! +10 Hops', app.width//2, app.height * .4, size = 50, font = 'orbitron', 
-                      bold = True, fill = 'black', 
+            drawLabel('BOOSTED! +10 Hops', app.width//2, app.height * .4, 
+                      size = 50, font = 'orbitron', bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
             drawLabel('press enter to proceed', app.width//2, app.height//2, size = 20, font = 'orbitron',
                       fill = 'black', align = 'center')
@@ -180,8 +197,8 @@ def redrawAll(app):
         if app.drag:
             drawRect(app.width//2, app.height * .4, app.width//3, app.height//3, 
                      fill = 'white', border = 'black', borderWidth = 3, align = 'center')
-            drawLabel('DRAGGED! -10 Hops', app.width//2, app.height * .4, size =50, font = 'orbitron', 
-                      bold = True, fill = 'black', 
+            drawLabel('DRAGGED! -10 Hops', app.width//2, app.height * .4, 
+                      size =50, font = 'orbitron', bold = True, fill = 'black', 
                       borderWidth = 2, align = 'center')
             drawLabel('press enter to proceed', app.width//2, app.height//2, size = 20, font = 'orbitron',
                       fill = 'black', align = 'center')
@@ -198,10 +215,7 @@ def redrawAll(app):
             world.drawInk(app)
 
         if app.gameOver:
-            #drawLabel('gameOver', app.width//2, app.height//2, align = 'center', size = 100)
             util.popup(app)
-
-            """app.popUp = True"""
     
 def onStep(app):
     app.counter += 1 #consistent events timer
@@ -321,8 +335,6 @@ def onStep(app):
         if app.hopCount > app.highScore:
             app.highScore = app.hopCount
           
-
-#test on key press
 def onKeyPress(app, key):
     popCols(app)
     if app.boost:
@@ -434,7 +446,6 @@ def onKeyPress(app, key):
                 newX, newY = newX, newY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
                 app.player.x = newX      
             
-
 def onMousePress(app, mouseX, mouseY):
     #menu edits
     if app.menuMode:
@@ -528,7 +539,8 @@ def restart(app):
     app.aboutColor = 'gray'
 
     #world lists
-    app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
+    app.world = ['grass', 'road', 'road', 'grass', 'grass', 
+                 'road', 'grass', 'grass', 'road', 'grass', 'road']
     app.seen = []
 
     #terrain generation
@@ -548,7 +560,8 @@ def restart(app):
     app.playerXIndex = 7
     startX, startY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
     app.player = Player(startX, startY, 50, app.stepsPerSecond//5, 75, 50, 25)
-    app.charPlayer = Player(app.width*4/5, app.height*0.7, 20, app.stepsPerSecond//5, 450, 300, 150)
+    app.charPlayer = Player(app.width*4/5, app.height*0.7, 20, 
+                            app.stepsPerSecond//5, 450, 300, 150)
     
     #game counts
     app.hopCount = 0
@@ -561,7 +574,8 @@ def restart(app):
     #powerup/powerdown functions
     #starpower
     app.powerup = False
-    app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
+    app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 
+                         'paleGreen', 'lightCyan', 'mediumPurple']
     app.colorIndex = 0
     app.poweruptimer = 150
     app.paused = False
@@ -585,7 +599,7 @@ def restart(app):
     app.currRow = None
     app.currCol = None
 
-    #sounds
+    #sounds (cited in on app start)
     app.hopSound = Sound('sounds/hop.mp3')
     app.whoosh = Sound('sounds/car.mp3')
     app.powerUpSound = Sound('sounds/skip.mp3')
@@ -791,7 +805,8 @@ def updateWorld(app):
                 height = py_random.randint(50, 70)
                 speed = 15
                 x = -(i*offset)
-                cars.append(Car(x, width, height, py_random.choice(colors), speed, len(app.world) - 1, direction))
+                cars.append(Car(x, width, height, py_random.choice(colors), 
+                                speed, len(app.world) - 1, direction))
         else:
             for i in range(totalCars):
                 offset = 400
@@ -800,7 +815,8 @@ def updateWorld(app):
                 height = py_random.randint(20, 70)
                 speed = 15
                 x = app.width + (i*offset)
-                cars.append(Car(x, width, height, py_random.choice(colors), speed, len(app.world) - 1, direction))
+                cars.append(Car(x, width, height, py_random.choice(colors), 
+                                speed, len(app.world) - 1, direction))
         app.cars.append(cars)
     else:
         app.cars.append([])
@@ -819,7 +835,6 @@ def updateWorld(app):
         app.logs.append(getLogs(app))
         for index in range(15):
             if app.logs[-1][index] == 'log':
-                #collectibles[index] = getCollectible(app, py_random.randint(index, index+3), len(app.world) - 1)
                 collectibles[index] = getCollectible(app, index, len(app.world) - 1) 
     else:
         app.logs.append(['no']*15)

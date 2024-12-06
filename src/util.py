@@ -81,6 +81,7 @@ def drawBlock3D(length, width, height, color):
     drawPlane(top, color)
 
 def drawMenu(app):
+    #made via www.cooltext.com 
     drawImage('src/krossykartlogo.png', app.width//2, app.height//3, align = 'center')
 
 #Inspired by CMU CS Academy: 6.3.6 Fancy Wheel 1
@@ -100,7 +101,9 @@ def getRadiusEndpoint(cx, cy, r, theta):
 
 def drawStars(app):
     x, y = getRadiusEndpoint(app.starX, app.starY, app.starRadius, app.starAngle)
-    drawImage('src/star.png', x - app.starWidth // 2, y - app.starHeight//2, width = app.starWidth, height = app.starHeight)
+    #https://m.media-amazon.com/images/I/31TuRoKarfL._AC_UF894,1000_QL80_.jpg 
+    drawImage('src/star.png', x - app.starWidth // 2, y - app.starHeight//2, 
+              width = app.starWidth, height = app.starHeight)
 
 app.playLeft = app.width/3.2 + 100
 app.playTop = app.height*0.5
@@ -112,22 +115,25 @@ def drawButtons(app):
     drawRect(app.width/3.2 + 100, app.height*0.5, 
              app.width//4, app.height*0.1, 
              fill = app.playColor, border = 'black')
-    drawLabel('Start', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.5 + (app.height*.1)//2, 
-              size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+    drawLabel('Start', app.width/3.2 + 100 + (app.width//4) // 2, 
+              app.height*0.5 + (app.height*.1)//2, size = app.height*.05, 
+              font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
     
     #char button
     drawRect(app.width/3.2 + 100, app.height*0.625, 
              app.width//4, app.height*0.1, 
              fill = app.charColor, border = 'black')
-    drawLabel('Characters', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.625 + (app.height*.1)//2, 
-              size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+    drawLabel('Characters', app.width/3.2 + 100 + (app.width//4) // 2,
+              app.height*0.625 + (app.height*.1)//2, size = app.height*.05, 
+              font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
     
     #about button
     drawRect(app.width/3.2 + 100, app.height*0.75, 
              app.width//4, app.height*0.1, 
              fill = app.aboutColor, border = 'black')
-    drawLabel('About', app.width/3.2 + 100 + (app.width//4) // 2, app.height*0.75 + (app.height*.1)//2, 
-              size = app.height*.05, font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
+    drawLabel('About', app.width/3.2 + 100 + (app.width//4) // 2, 
+              app.height*0.75 + (app.height*.1)//2, size = app.height*.05, 
+              font = 'arial', bold = True, fill = 'paleTurquoise', align = 'center')
 
 
 #CS academy intersection conditions (4.3.5)    
@@ -158,7 +164,6 @@ def backButton(mouseX, mouseY):
     if (50 <= mouseX <= right) and (50 <= mouseY <= bottom):
         return True
     return False
-
 
 def restartButton(mouseX, mouseY):
     index = 5
@@ -258,8 +263,6 @@ def getCurrentCell(app):
                 return row, col
     
     return None, None
-        
-
 
 #get vertices for drawing block
 def getVertices(x, y, width, height, depth):

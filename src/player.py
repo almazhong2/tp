@@ -1,12 +1,6 @@
 from cmu_graphics import *
 import util
 
-
-"""
-def drawPlayer(app):
-    util.drawBorderBlock(app.playerX, app.playerY, 75, 50, app.depth, app.playerColor)
-"""
-
 #will snap the player to be aligned with the terrain
 def snapTerrainY(app, i):
     tierHeight = app.height // len(app.world)

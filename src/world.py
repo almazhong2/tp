@@ -83,7 +83,8 @@ def drawDashes(app, i):
 #lake functions
 def drawLake(app, i):
     y = app.height - (i + 1) * (app.height // len(app.world))
-    util.drawBlock(app.width//4, y, 1.5*app.width, 1, 75, gradient('lightCyan', 'lightSkyBlue', 'skyBlue', 'deepSkyBlue', start = 'center'))
+    util.drawBlock(app.width//4, y, 1.5*app.width, 1, 75, 
+                   gradient('lightCyan', 'lightSkyBlue', 'skyBlue', 'deepSkyBlue', start = 'center'))
     
     logList = []
     if i < len(app.logs):
@@ -125,7 +126,6 @@ def snapTerrain(app, j):
     tierWidth = app.width // 15 #allow 15 spaces
     x = tierWidth * (j) 
     return x
-
 
 #main
 def drawWorld(app):

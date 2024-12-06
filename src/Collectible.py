@@ -37,7 +37,7 @@ def snapTerrainY(app, i):
     return y
 
 def snapTerrainX(app, j):
-    tierWidth = app.width // 15 #allow 15 hops width
+    tierWidth = app.width//15
     x = tierWidth * (j) 
     return x
 

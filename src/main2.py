@@ -18,6 +18,7 @@ def onAppStart(app):
     app.gameMode = False
     app.charMode = False
     app.menuMode = True
+    app.aboutMode = False
     app.gameOver = False
     app.popUp = False
     app.state = 'game over!'
@@ -62,6 +63,7 @@ def onAppStart(app):
     #powerup/powerdown functions
     #starpower
     app.playerColor = 'violet'
+    app.characterColor = app.playerColor
     app.selectedColor = 'violet'
     app.powerup = False
     app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
@@ -88,7 +90,6 @@ def onAppStart(app):
     #board variables
     app.currRow = None
     app.currCol = None
-    app.charColor = app.playerColor
 
     #sounds
     app.hopSound = Sound('sounds/hop.mp3')
@@ -124,7 +125,9 @@ def redrawAll(app):
                   bold = True, fill = 'black', 
                   borderWidth = 2, align = 'center')
         
-    
+    if app.aboutMode:
+        util.popup(app)
+
     if app.gameMode:
         world.drawWorld(app)
         for i in range (len(app.world)):
@@ -208,11 +211,16 @@ def onStep(app):
     #menu changes
     if app.menuMode:
         app.starAngle = (app.starAngle + app.starSpeed) % 360
-        app.background = 'gainsboro'
+        app.background = gradient('gray', 'gainsboro', start = 'top')
+        app.state = 'details'
     
     if app.charMode:
         app.background = 'lightSkyBlue'
     
+    if app.aboutMode:
+        app.background = gradient('gray', 'gainsboro', start = 'top')
+
+
     if app.gameMode: 
         #player updates
         app.player.updateHop()
@@ -236,9 +244,6 @@ def onStep(app):
             app.poweruptimer -= 1
             app.colorIndex = (app.colorIndex + 1) % len(app.powerupColors)
             app.playerColor = app.powerupColors[app.colorIndex]
-            if app.playStar:
-                app.starSound.play()
-                app.playStar = False
             
             if app.poweruptimer <= 0:
                 app.starSound.pause()
@@ -315,8 +320,6 @@ def onStep(app):
         app.paused = True
         if app.hopCount > app.highScore:
             app.highScore = app.hopCount
-
-
           
 
 #test on key press
@@ -444,7 +447,18 @@ def onMousePress(app, mouseX, mouseY):
             app.gameMode = False
             app.charMode = True
             app.menuMode = False
+        elif util.aboutButton(mouseX, mouseY):
+            app.gameMode = False
+            app.charMode = False
+            app.menuMode = False
+            app.aboutMode = True
+            
     
+    if app.aboutMode:
+        if util.restartButton(mouseX, mouseY):
+            app.menuMode = True
+            app.aboutMode = False
+
     if app.charMode:
         app.background = 'lightSkyBlue'
         row, col = util.getCurrentCell(app)
@@ -493,7 +507,93 @@ def onMouseMove(app, mouseX, mouseY):
         app.currRow, app.currCol = util.getCurrentCell(app)
 
 def restart(app):
-    onAppStart(app)
+
+    #menu starters
+    app.background = gradient('gray', 'gainsboro', start = 'top')
+    app.width = 1600
+    app.height = 1050
+
+    #modes
+    app.gameMode = False
+    app.charMode = False
+    app.menuMode = True
+    app.aboutMode = False
+    app.gameOver = False
+    app.popUp = False
+    app.state = 'details'
+
+    #button colors
+    app.playColor = 'gray'
+    app.charColor = 'gray'
+    app.aboutColor = 'gray'
+
+    #world lists
+    app.world = ['grass', 'road', 'road', 'grass', 'grass', 'road', 'grass', 'grass', 'road', 'grass', 'road']
+    app.seen = []
+
+    #terrain generation
+    app.cars = [[] for i in range(len(app.world))]
+    app.greenery = [[] for i in range(len(app.world))]
+    app.logs = [[] for i in range(len(app.world))]
+    app.collectibles = [[] for i in range(len(app.world))]
+    app.prevTerrain = None
+
+    #timer events
+    app.stepsPerSecond = 30
+    app.counter = 0
+    
+    #player animations
+    app.player = Player(0, 0, 50, app.stepsPerSecond//5, 75, 50, 25)
+    app.playerYIndex = len(app.world)//2
+    app.playerXIndex = 7
+    startX, startY = app.player.snapTerrain(app, app.playerYIndex, app.playerXIndex)
+    app.player = Player(startX, startY, 50, app.stepsPerSecond//5, 75, 50, 25)
+    app.charPlayer = Player(app.width*4/5, app.height*0.7, 20, app.stepsPerSecond//5, 450, 300, 150)
+    
+    #game counts
+    app.hopCount = 0
+    app.totalCoins += app.coinCount
+    app.coinCount = 0
+    app.backCount = 5 
+    app.powerupCount = 0
+    app.powerdownCount = 0 
+
+    #powerup/powerdown functions
+    #starpower
+    app.powerup = False
+    app.powerupColors = ['lightCoral', 'orange', 'lemonChiffon', 'paleGreen', 'lightCyan', 'mediumPurple']
+    app.colorIndex = 0
+    app.poweruptimer = 150
+    app.paused = False
+    app.popup = False
+
+    #skiplanes
+    app.skip = False
+    app.drawSkip = False
+    app.skipLabelTimer = 25
+    app.skiptimer = 150
+
+    #boosted/dragged
+    app.boost = False
+    app.drag = False
+
+    #ink
+    app.ink = False
+    app.balls = []
+
+    #board variables
+    app.currRow = None
+    app.currCol = None
+
+    #sounds
+    app.hopSound = Sound('sounds/hop.mp3')
+    app.whoosh = Sound('sounds/car.mp3')
+    app.powerUpSound = Sound('sounds/skip.mp3')
+    app.splash = Sound('sounds/splash.mp3')
+    app.starSound = Sound('sounds/starpower.mp3')
+    app.playStar = True
+    app.fail = Sound('sounds/fail.mp3')
+    app.inkSound = Sound('sounds/splat.mp3')
 
 
 #helper functions
@@ -507,10 +607,10 @@ def carCollision(app, obj):
     return False
 
 def powerUp(app): 
-    choices = ['starpower','skiplanes','rocketboost']
+    choices = ['starpower', 'skiplanes', 'rocketboost']
     choice = py_random.choice(choices)
     if choice == 'starpower':
-        app.playStar = True
+        app.starSound.play()
         app.powerup = True
         app.poweruptimer = 300
     elif choice == 'rocketboost':

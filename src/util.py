@@ -350,9 +350,14 @@ def popup(app):
     drawRect(app.width//2, app.height//2, app.width//3, rectHeight, 
              fill = 'lightSkyBlue', border = 'black', borderWidth = 10, align = 'center')
     
-    labels = [f'{app.state}', f'score: {app.hopCount}', f'coins collected: {app.coinCount}', 
+    if app.gameMode:
+        labels = [f'{app.state}', f'score: {app.hopCount}', f'coins collected: {app.coinCount}', 
               f'powerups: {app.powerupCount}', f'powerdowns: {app.powerdownCount}',
               f'highscore: {app.highScore}', 'restart']
+    elif app.aboutMode:
+        labels = [f'{app.state}', f'use arrows to move', f'coins collected: {app.totalCoins}', 
+              f'blue powerups', f'red powerdowns',
+              f'highscore: {app.highScore}', 'exit']
 
     for index in range(len(labels)):
         label = labels[index]
